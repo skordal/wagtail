@@ -1,0 +1,9 @@
+# Ignore object files and executables:
+*.o
+wagtail.elf
+wagtail.bin
+uImage
+
+# Ignore vim swap files:
+.*.swp
+.*.swo
