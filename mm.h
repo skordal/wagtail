@@ -40,9 +40,6 @@ namespace wagtail
 			// Gets the size of the RAM:
 			static unsigned int get_ramsize() { return ramsize; }
 		private:
-			// Increases the kernel dataspace with one page:
-			static void increase_dataspace();
-
 			class block
 			{
 				public:

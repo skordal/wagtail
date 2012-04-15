@@ -67,7 +67,7 @@ void mm::initialize()
 	first_block->next = 0;
 	first_block->prev = 0;
 	first_block->used = false;
-	first_block->size = (unsigned int) kernel_dataspace_end - (unsigned int )kernel_data_end - sizeof(block);
+	first_block->size = (unsigned int) kernel_dataspace_end - (unsigned int ) kernel_data_end - sizeof(block);
 	first_block->zero();
 
 	// Allow use of the memory allocator (TODO: Rename this variable):
@@ -141,8 +141,8 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 				return_address = reinterpret_cast<unsigned int>(current_block->get_address());
 
 				// Get the offset into the block needed for correct alignment:
-				unsigned int offset = ((return_address + alignment - 1) & utils::mask_left(alignment)) -
-					return_address;
+				unsigned int offset = ((return_address + alignment - 1) & utils::mask_left(alignment))
+					- return_address;
 				if(offset == 0)
 				{
 					if(current_block->get_size() > size)
@@ -162,7 +162,7 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 			if(current_block->next == 0)
 			{
 				void * new_page = allocate_page();
-				void * new_block_addr = new_page;
+				void * new_block_addr = kernel_dataspace_end;
 				mmu::get_kernel_table().map_page(new_page, kernel_dataspace_end, mmu::RW_NA, mmu::DATA);
 				kernel_dataspace_end = reinterpret_cast<void *>(
 					reinterpret_cast<unsigned int>(kernel_dataspace_end) + 4096);
