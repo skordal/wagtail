@@ -22,8 +22,12 @@ namespace wagtail
 		// Kernel panic function, stops everything and prints a short error message:
 		extern "C" void panic() __attribute((noreturn));
 
-		const int version_major = 0;
-		const int version_minor = 1;
+		// Wagtail version number:
+		namespace version
+		{
+			const int major = 0;
+			const int minor = 1;
+		}
 	}
 }
 

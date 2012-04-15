@@ -14,8 +14,8 @@ kostream & kernel::message()
 extern "C" void kernel::kernel_main()
 {
 	// Print a heading before initializing:
-	message() << "Welcome to Wagtail OS v" << kernel::version_major << '.' << kernel::version_minor
-		<< "!" << kstream::newline;
+	message() << "Welcome to Wagtail OS v" << version::major << '.' << version::minor
+		<< " :-)" << kstream::newline;
 
 	// Initialize the device manager:
 	device_mgr::initialize();
