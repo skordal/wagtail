@@ -22,6 +22,7 @@ void device_mgr::initialize()
 void device_mgr::register_device(device * dev)
 {
 	kernel::message() << "Registering device: " << *dev << kstream::newline;
+//	device_list.append(dev);
 }
 
 // Unregisters a device with the device manager:

@@ -23,6 +23,7 @@ namespace wagtail
 			// Unregisters a device with the device manager:
 			void unregister_device(device * dev);
 		private:
+			// List of devices: (TODO: Find a better data structure for devices)
 			klist<device *> device_list;
 
 			// The global device manager:

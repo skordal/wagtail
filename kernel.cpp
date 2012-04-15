@@ -25,6 +25,8 @@ extern "C" void kernel::kernel_main()
 	for(int i = 0; i < 4; ++i)
 		device_mgr::get().register_device(&uart::get(i));
 
+	// Print some memory manager debug info, which makes it easier
+	// to spot memory manager bugs:
 	mm::print_debug_info(message());
 
 	while(true) asm volatile("wfi\n\t");
