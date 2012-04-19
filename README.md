@@ -18,7 +18,7 @@ Another goal of Wagtail is to exploit various C++ features in a way that benefit
 Current status
 --------------
 
-*This is a work in heavy development, and cannot be used for any serious purpose yet.*
+**This is a work in heavy development, and cannot be used for any serious purpose yet.**
 
 Wagtail currently has a working *memory manager* and *page allocator*. Though inefficient, the memory manager allows the kernel to use _new_ and _delete_ like normal C++ applications.
 
