@@ -29,21 +29,26 @@ namespace wagtail
 			// Constructs a UART object for the specified UART module:
 			uart(int module);
 
-			// UART register offsets:
-			class registers
+			// UART register data:
+			struct registers
 			{
-				public:
-					static const unsigned int thr_reg = 0x00;
-					static const unsigned int rhr_reg = 0x00;
-					static const unsigned int lsr_reg = 0x14;
+				struct thr
+				{
+					static const unsigned int offset = 0x00;
+				};
 
-					// LSR register bitfield names:
-					class lsr
-					{
-						public:
-							static const int tx_fifo_e = 1 << 5;
-							static const int rx_fifo_e = 1 << 0;
-					};
+				struct rhr
+				{
+					static const unsigned int offset = 0x00;
+				};
+
+				struct lsr
+				{
+					static const unsigned int offset = 0x14;
+
+					static const int tx_fifo_e = 1 << 5;
+					static const int rx_fifo_e = 1 << 0;
+				};
 			};
 
 			// The number of this module:

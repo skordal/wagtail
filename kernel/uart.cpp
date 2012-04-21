@@ -19,29 +19,6 @@ uart uart::uart_modules[4] = {
 	uart(0), uart(1), uart(2), uart(3)
 };
 
-// Prints a debug message to UART2. This is used early in the initialization
-// process to print debug messages. Note that this function cannot be used
-// after the MMU has been initialized.
-/*void uart::early_print_string(const char * string)
-{
-	const void * debug_base = reinterpret_cast<void *>(0x49020000);
-
-	for(int index = 0; string[index] != 0; ++index)
-	{
-		// For newlines, also print a \r to move the cursor to the beginning
-		// of the line:
-		if(string[index] == '\n')
-			uart::early_print_string("\r");
-
-		// Wait for the UART to be ready to send:
-		while(!(io::read<char>(debug_base, uart::registers::lsr_reg)
-			& uart::registers::lsr::tx_fifo_e));
-
-		// Write the character to the UART:
-		io::write(string[index], debug_base, uart::registers::thr_reg);
-	}
-}*/
-
 // Writes a character to a UART module:
 kostream & uart::operator << (char character)
 {
@@ -50,10 +27,10 @@ kostream & uart::operator << (char character)
 		*this << '\r';
 
 	// Wait for the UART to be ready to send:
-	while(!(io::read<char>(uart_base[module], uart::registers::lsr_reg)
+	while(!(io::read<char>(uart_base[module], uart::registers::lsr::offset)
 		& uart::registers::lsr::tx_fifo_e));
 	// Write the character to the UART:
-	io::write(character, uart_base[module], uart::registers::thr_reg);
+	io::write(character, uart_base[module], uart::registers::thr::offset);
 	
 	return *this;
 }
@@ -62,9 +39,9 @@ kostream & uart::operator << (char character)
 kistream & uart::operator >> (char & character)
 {
 	// Wait for the UART to be ready to send:
-	while(!(io::read<char>(uart_base[module], uart::registers::lsr_reg)
+	while(!(io::read<char>(uart_base[module], uart::registers::lsr::offset)
 		& uart::registers::lsr::rx_fifo_e));
-	character = io::read<char>(uart_base[module], uart::registers::rhr_reg);
+	character = io::read<char>(uart_base[module], uart::registers::rhr::offset);
 	return *this;
 }
 
