@@ -59,16 +59,16 @@ namespace wagtail
 			block_device(unsigned char major, unsigned char minor,
 				unsigned int block_size, const char * description);
 
-			unsigned int get_block_size() const { return block_size; }
+			virtual unsigned int get_block_size() const { return block_size; }
 
 			// Reads a block from the device:
 			virtual void read_block(void * buffer, block_address_t address) = 0;
 			// Reads several sequential blocks from the device:
-			virtual void read_blocks(void * buffer, block_address_t address, int num) = 0;
+			virtual void read_blocks(void * buffer, block_address_t address, int length);
 			// Writes a block to the device:
 			virtual void write_block(void * buffer, block_address_t address) = 0;
 			// Writes several sequenctial blocks to the device:
-			virtual void write_blocks(void * buffer, block_address_t address, int num) = 0;
+			virtual void write_blocks(const void * buffer, block_address_t address, int length);
 		private:
 			unsigned int block_size;
 	};
