@@ -12,7 +12,9 @@ namespace wagtail
 	// Device major numbers:
 	namespace device_numbers
 	{
+		const int special_major = 0;
 		const int uart_major = 1;
+		const int sd_card_major = 2;
 	}
 
 	// Base class for all devices:
@@ -51,10 +53,22 @@ namespace wagtail
 	class block_device : public device
 	{
 		public:
+			// Type representing block addresses for block devices:
+			typedef long long block_address_t;
+
 			block_device(unsigned char major, unsigned char minor,
 				unsigned int block_size, const char * description);
 
 			unsigned int get_block_size() const { return block_size; }
+
+			// Reads a block from the device:
+			virtual void read_block(void * buffer, block_address_t address) = 0;
+			// Reads several sequential blocks from the device:
+			virtual void read_blocks(void * buffer, block_address_t address, int num) = 0;
+			// Writes a block to the device:
+			virtual void write_block(void * buffer, block_address_t address) = 0;
+			// Writes several sequenctial blocks to the device:
+			virtual void write_blocks(void * buffer, block_address_t address, int num) = 0;
 		private:
 			unsigned int block_size;
 	};
