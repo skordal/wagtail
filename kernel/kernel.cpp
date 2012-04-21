@@ -17,10 +17,14 @@ extern "C" void kernel::kernel_main()
 	message() << "Welcome to Wagtail OS v" << version::major << '.' << version::minor
 		<< " :-)" << kstream::newline;
 
+	// Initialize the SD card:
+	sd_card::initialize();
+
 	// Print some memory manager debug info, which makes it easier
 	// to spot memory manager bugs:
 	mm::print_debug_info(message());
 
+	// Kernel loop:
 	while(true) asm volatile("wfi\n\t");
 }
 

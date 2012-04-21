@@ -6,6 +6,7 @@
 #define WAGTAIL_KERNEL_H
 
 #include "kstream.h"
+#include "sd_card.h"
 #include "uart.h"
 
 namespace wagtail
