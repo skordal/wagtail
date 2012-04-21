@@ -5,7 +5,6 @@
 #ifndef WAGTAIL_KERNEL_H
 #define WAGTAIL_KERNEL_H
 
-#include "device_mgr.h"
 #include "kstream.h"
 #include "uart.h"
 

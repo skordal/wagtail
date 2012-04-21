@@ -22,5 +22,3 @@ Current status
 
 Wagtail currently has a working *memory manager* and *page allocator*. Though inefficient, the memory manager allows the kernel to use _new_ and _delete_ like normal C++ applications.
 
-A device manager is also being written, and will be a part in a system for handling devices like UNIX, with files corresponding to devices.
-

@@ -17,14 +17,6 @@ extern "C" void kernel::kernel_main()
 	message() << "Welcome to Wagtail OS v" << version::major << '.' << version::minor
 		<< " :-)" << kstream::newline;
 
-	// Initialize the device manager:
-	device_mgr::initialize();
-
-	// Register the UART devices, as they presently cannot do this
-	// themselves, due to being initialized before the device manager:
-	for(int i = 0; i < 4; ++i)
-		device_mgr::get().register_device(&uart::get(i));
-
 	// Print some memory manager debug info, which makes it easier
 	// to spot memory manager bugs:
 	mm::print_debug_info(message());

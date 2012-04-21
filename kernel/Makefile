@@ -11,7 +11,6 @@ SOURCE_FILES    := \
 	aborts.cpp \
 	cxx_support.cpp \
 	device.cpp \
-	device_mgr.cpp \
 	kernel.cpp \
 	kstream.cpp \
 	mm.cpp \
