@@ -8,7 +8,7 @@
 using namespace wagtail;
 
 // Symbols from the linker script:
-extern void * text_start, * text_end;
+extern void * text_start;
 extern void * data_start, * data_end;
 
 // Address of the next device mapping:
@@ -64,7 +64,7 @@ void mmu::initialize()
 	void * stack_virtual = reinterpret_cast<void *>(0xa0000000 - 0x8000);
 
 	// Map the kernel code:
-	kernel_translation_table.map_interval(&text_start, &text_end, &text_start, RO_NA, CODE);
+	kernel_translation_table.map_interval(&text_start, &data_start, &text_start, RO_NA, CODE);
 	// Map the kernel data:
 	kernel_translation_table.map_interval(&data_start, &data_end, &data_start, RW_NA, DATA);
 	// Map the kernel stack:

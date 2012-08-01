@@ -17,8 +17,12 @@ SECTIONS
 		constructors_start = .;
 		*(.init_array)
 		constructors_end = .;
+
+		/* Destructors: */
+		destructors_start = .;
+		*(.fini_array)
+		destructors_end = .;
 	}
-	text_end = ALIGN(4096);
 
 	.data : ALIGN(4096)
 	{

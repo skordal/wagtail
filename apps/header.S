@@ -15,7 +15,5 @@ header:
 
 @ When an application is loaded, all data between the start of the executable
 @ and data_start is mapped as code. All data between data_start and bss_start
-@ is mapped as data. The bss section is not zeroed by the OS, but the start
-@ code does so (if used).
-
+@ is mapped as data. The bss section is not zeroed by the OS.
 

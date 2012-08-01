@@ -74,3 +74,22 @@ start_kernel: @ Enable interrupts and enter the C++ kernel:
 	cpsie if
 	b.n kernel_main
 
+run_global_destructors:
+	ldr r0, =destructors_start
+	ldr r1, =destructors_end
+1:
+	cmp r0, r1
+	beq.n loopy
+
+	ldr r2, [r0]
+	push {r0 - r1}
+	blx r2
+	pop {r0 - r1}
+	adds r0, #4
+	b.n 1b
+
+loopy: @ TODO: halt or reboot here-abouts.
+	cpsid aif
+	wfi
+	b.n loopy
+

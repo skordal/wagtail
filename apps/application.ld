@@ -9,11 +9,14 @@ SECTIONS
 	.text 0x1000 :
 	{
 		../header.o(.text)
-		*(.text)
+		*(.text*)
 		*(.gnu.linkonce.t*)
 		constructors_start = .;
 		*(.init_array)
 		constructors_end = .;
+		destructors_start = .;
+		*(.fini_array)
+		destructors_end = .;
 	}
 
 	.data : ALIGN(4096)
@@ -28,6 +31,7 @@ SECTIONS
 	.bss : ALIGN(4)
 	{
 		bss_start = .;
+		*(.bss*)
 	}
 
 	application_end = .;
