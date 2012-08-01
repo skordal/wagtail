@@ -17,7 +17,7 @@ namespace wagtail
 		kostream & message();
 
 		// Kernel entry point, called from assembler code:
-		extern "C" void kernel_main() __attribute((noreturn));
+		extern "C" void kernel_main();
 
 		// Kernel panic function, stops everything and prints a short error message:
 		extern "C" void panic() __attribute((noreturn));
