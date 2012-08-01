@@ -34,7 +34,7 @@ extern "C" void kernel::panic()
 	message() << kstream::newline;
 	message() << "*** KERNEL PANIC ***" << kstream::newline;
 	message() << "A fatal error occurred, and Wagtail cannot recover." << kstream::newline;
-	message() << "Please do not panic (like the kernel), but reset your computer."
+	message() << "Please do not panic like your computer, but reset it instead."
 		<< kstream::newline << kstream::newline;
 
 	// Disable all interrupts and hang forever:
