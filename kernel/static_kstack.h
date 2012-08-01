@@ -2,8 +2,8 @@
 // (c) Kristian Klomsten Skordal 2012 <kristian.skordal@gmail.com>
 // Report bugs and issues on <http://github.com/skordal/wagtail>
 
-#ifndef WAGTAIL_ARRAY_KSTACK_H
-#define WAGTAIL_ARRAY_KSTACK_H
+#ifndef WAGTAIL_STATIC_KSTACK_H
+#define WAGTAIL_STATIC_KSTACK_H
 
 #include "kstack.h"
 
@@ -12,19 +12,20 @@ namespace wagtail
 	// This is a stack that uses a preallocated memory area for storage.
 	// Pushing in more elements than there is room for causes undefined
 	// behaviour, as does popping off the last element.
-	template<typename T> class array_kstack : public kstack<T>
+	template<typename T> class static_kstack : public kstack<T>
 	{
 		public:
-			// Constructs a new array_kstack with space for the specified amount of elements:
-			array_kstack(int capacity) : capacity(capacity), current_top(-1)
+			// Constructs a new static_kstack with enough space for the specified
+			// amount of elements:
+			static_kstack(int capacity) : capacity(capacity), current_top(-1)
 			{
 				memory_space = new T[capacity];
 				for(int i = 1; i < capacity; ++i)
 					memory_space[i] = 0;
 			}
 
-			// Cleans up:
-			~array_kstack() { delete[] memory_space; }
+			// Frees the allocated space:
+			~static_kstack() { delete[] memory_space; }
 
 			// Pushes an element onto the stack:
 			void push(const T & data) { memory_space[++current_top] = data; }

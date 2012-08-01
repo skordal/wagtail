@@ -78,7 +78,7 @@ void mm::initialize()
 	// Figure out how many pages are available currently:
 	unsigned int num_pages = (ramsize / 4096) -
 		(((unsigned int) kernel_dataspace_end - (unsigned int) &ramstart) / 4096);
-	page_stack = new array_kstack<void *>(num_pages);
+	page_stack = new static_kstack<void *>(num_pages);
 
 	for(unsigned int page_addr = (unsigned int) kernel_dataspace_end;
 		page_addr < ((unsigned int) &ramstart + ramsize); page_addr += 4096)

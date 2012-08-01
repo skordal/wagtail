@@ -6,9 +6,10 @@
 #define WAGTAIL_MM_H
 
 #include "io.h"
+#include "kstack.h"
+#include "static_kstack.h"
 #include "kstream.h"
 #include "mmu.h"
-#include "array_kstack.h"
 #include "sdrc.h"
 #include "utils.h"
 
