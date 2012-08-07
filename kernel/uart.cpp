@@ -14,10 +14,8 @@ void * uart::uart_base[4] = {
 	mmu::map_device(reinterpret_cast<void *>(0x49042000), 4096)
 };
 
-// UART module objects:
-uart uart::uart_modules[4] = {
-	uart(0), uart(1), uart(2), uart(3)
-};
+// Available UART devices:
+uart uart::uart_modules[4] = {uart(0), uart(1), uart(2), uart(3)};
 
 // Writes a character to a UART module:
 kostream & uart::operator << (char character)
@@ -46,7 +44,7 @@ kistream & uart::operator >> (char & character)
 }
 
 // Constructs a new UART module with the specified parameters:
-uart::uart(int module) : character_device(device_numbers::uart_major, module, "UART module"), module(module)
+uart::uart(int module) : character_device(device_numbers::uart_major, module, "UART"), module(module)
 {
 }
 
