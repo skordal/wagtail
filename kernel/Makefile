@@ -9,14 +9,13 @@ include ../config.mk
 # Source files to build:
 SOURCE_FILES    := \
 	aborts.cpp \
+	clock_mgr.cpp \
 	cxx_support.cpp \
 	device.cpp \
 	kernel.cpp \
 	kstream.cpp \
 	mm.cpp \
 	mmu.cpp \
-	process.cpp \
-	process_mgr.cpp \
 	sd_card.cpp \
 	uart.cpp \
 	utils.cpp
