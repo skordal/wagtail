@@ -28,3 +28,10 @@ void wagtail::data_abort()
 	kernel::message() << fault_address << kstream::newline;
 }
 
+void wagtail::prefetch_abort()
+{
+	kernel::message() << kstream::newline << "Prefetch abort!" << kstream::newline;
+	kernel::message() << "Please implement a handler for this exception." << kstream::newline;
+	kernel::panic();
+}
+

@@ -36,12 +36,15 @@ int_svc:
 
 @ Prefetch abort handler:
 int_prefetch_abort:
-	movs r0, #'P'
-	ldr r1, =0x49020000
-	strb r0, [r1]
-1:
-	wfi
-	b.n 1b
+	sub lr, #4
+	srsdb sp!, #PROCESSOR_MODE_SVC
+	cps #PROCESSOR_MODE_SVC
+
+	push {r0 - r3, ip, lr}
+	bl prefetch_abort
+	pop {r0 - r3, ip, lr}
+
+	rfeia sp!
 
 @ Data abort handler:
 int_data_abort:
