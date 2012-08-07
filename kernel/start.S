@@ -72,14 +72,14 @@ run_global_constructors:
 
 start_kernel: @ Enable interrupts and enter the C++ kernel:
 	cpsie if
-	b.n kernel_main
+	bl kernel_main
 
 run_global_destructors:
 	ldr r0, =destructors_start
 	ldr r1, =destructors_end
 1:
 	cmp r0, r1
-	beq.n loopy
+	beq.n 2f
 
 	ldr r2, [r0]
 	push {r0 - r1}
@@ -87,6 +87,7 @@ run_global_destructors:
 	pop {r0 - r1}
 	adds r0, #4
 	b.n 1b
+2:
 
 loopy: @ TODO: halt or reboot here-abouts.
 	cpsid aif
