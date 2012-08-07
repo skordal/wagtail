@@ -66,39 +66,36 @@ namespace wagtail
 			typedef translation_table<2048> application_translation_table_t;
 
 			// First level page table entry types:
-			class l1
+			struct l1
 			{
-				public:
-					static const int type_fault = 0b00;
-					static const int type_page_table = 0b01;
-					static const int type_section = 0b10;
-					static const int type_supersection = (1 << 18)|0b10;
+				static const int type_fault = 0b00;
+				static const int type_page_table = 0b01;
+				static const int type_section = 0b10;
+				static const int type_supersection = (1 << 18)|0b10;
 			};
 
 			// Second level page table entry types:
-			class l2
+			struct l2
 			{
-				public:
-					static const int type_fault = 0b00;
-					static const int type_large_page = 0b01;
-					static const int type_small_page = 0b10;
+				static const int type_fault = 0b00;
+				static const int type_large_page = 0b01;
+				static const int type_small_page = 0b10;
 
-					// Small page attribute bits:
-					class small_page
-					{
-						public:
-							static const int ng =	1 << 11;
-							static const int s =	1 << 10;
-							static const int ap2 =	1 <<  9;
-							static const int tex2 = 1 <<  8;
-							static const int tex1 = 1 <<  7;
-							static const int tex0 = 1 <<  6;
-							static const int ap1 = 	1 <<  5;
-							static const int ap0 =	1 <<  4;
-							static const int c =	1 <<  3;
-							static const int b = 	1 <<  2;
-							static const int xn = 	1 <<  0;
-					};
+				// Small page attribute bits:
+				struct small_page
+				{
+					static const int ng =	1 << 11;
+					static const int s =	1 << 10;
+					static const int ap2 =	1 <<  9;
+					static const int tex2 = 1 <<  8;
+					static const int tex1 = 1 <<  7;
+					static const int tex0 = 1 <<  6;
+					static const int ap1 = 	1 <<  5;
+					static const int ap0 =	1 <<  4;
+					static const int c =	1 <<  3;
+					static const int b = 	1 <<  2;
+					static const int xn = 	1 <<  0;
+				};
 			};
 
 			// Creates the initial page tables and initializes the MMU:

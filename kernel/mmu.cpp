@@ -107,6 +107,7 @@ void mmu::initialize()
 void * mmu::map_device(void * base, unsigned int size)
 {
 	void * retval = next_device_addr;
+
 	kernel_translation_table.map_interval(
 		base, reinterpret_cast<void *>(reinterpret_cast<unsigned int>(base) + size),
 		next_device_addr, RW_NA, DEVICE);

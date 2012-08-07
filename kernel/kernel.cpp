@@ -23,9 +23,6 @@ extern "C" void kernel::kernel_main()
 	// Print some memory manager debug info, which makes it easier
 	// to spot memory manager bugs:
 	mm::print_debug_info(message());
-
-	// Kernel loop:
-	while(true) asm volatile("wfi\n\t");
 }
 
 extern "C" void kernel::panic()

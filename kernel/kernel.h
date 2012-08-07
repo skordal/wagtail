@@ -5,6 +5,7 @@
 #ifndef WAGTAIL_KERNEL_H
 #define WAGTAIL_KERNEL_H
 
+#include "clock_mgr.h"
 #include "kstream.h"
 #include "sd_card.h"
 #include "uart.h"

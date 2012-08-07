@@ -65,6 +65,7 @@ namespace wagtail
 			virtual void read_block(void * buffer, block_address_t address) = 0;
 			// Reads several sequential blocks from the device:
 			virtual void read_blocks(void * buffer, block_address_t address, int length);
+
 			// Writes a block to the device:
 			virtual void write_block(void * buffer, block_address_t address) = 0;
 			// Writes several sequenctial blocks to the device:

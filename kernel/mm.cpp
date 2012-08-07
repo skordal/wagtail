@@ -12,12 +12,12 @@ extern void * bss_end, * data_end;
 extern void * ramstart;
 
 // Location of the first block of allocated memory:
-mm::block * mm::first_block = 0;
+mm::block * mm::first_block = nullptr;
 // Stack of page addresses:
-kstack<void *> * mm::page_stack = 0;
+kstack<void *> * mm::page_stack = nullptr;
 
 // Virtual base address of the SDRC module:
-void * mm::sdrc_base = 0;
+void * mm::sdrc_base = nullptr;
 
 // The ramsize stores the size of RAM:
 unsigned int mm::ramsize = 0;
@@ -44,7 +44,7 @@ extern "C" void mm_init()
 void mm::initialize()
 {
 	// Map the SDRC memory space:
-	sdrc_base = mmu::map_device(sdrc::base, 64*1024);
+	sdrc_base = mmu::map_device(sdrc::base, 64 * 1024);
 
 	// Get the amount of available RAM:
 	ramsize += (io::read<unsigned int>(sdrc_base, sdrc::registers::mcfg[0]) >> 8) & 0x3ff;
@@ -89,13 +89,14 @@ void mm::initialize()
 // Prints some debug statistics about the current memory manager state:
 void mm::print_debug_info(kostream & out)
 {
-	out << "Total RAM size: " << static_cast<int>(ramsize) << kstream::newline;
-	out << "Block header size: " << (int) sizeof(block) << kstream::newline;
+	out << "Total RAM size: " << static_cast<int>(ramsize) << " bytes" << kstream::newline;
+	out << "Block header size: " << (int) sizeof(block) << " bytes" << kstream::newline;
 	out << "Kernel dataspace end: " << kernel_dataspace_end << kstream::newline;
 	out << "Block info: " << kstream::newline;
 
 	block * current_block = first_block;
 	int block_counter = 0;
+
 	do {
 		out << "\tBlock " << block_counter++ << " @ " << (void *) current_block
 			<< ": " << (int) current_block->get_size() << " bytes - "
@@ -159,7 +160,7 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 				}
 			}
 
-			if(current_block->next == 0)
+			if(current_block->next == nullptr)
 			{
 				void * new_page = allocate_page();
 				void * new_block_addr = kernel_dataspace_end;
@@ -172,7 +173,7 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 					block * new_block = reinterpret_cast<block *>(new_block_addr);
 					current_block->next = new_block;
 					new_block->prev = current_block;
-					new_block->next = 0;
+					new_block->next = nullptr;
 					new_block->size = 4096 - sizeof(block);
 					new_block->used = false;
 				} else {
@@ -182,7 +183,7 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 			}
 
 			current_block = current_block->next;
-		} while(current_block != 0);
+		} while(current_block != nullptr);
 	}
 
 	return reinterpret_cast<void *>(return_address);
@@ -194,9 +195,9 @@ void mm::free(void * memory_block)
 	block * current = reinterpret_cast<block *>((unsigned int) memory_block - sizeof(block));
 	current->set_used(false);
 
-	if(current->prev != 0 && !current->prev->is_used())
+	if(current->prev != nullptr && !current->prev->is_used())
 		current = mm::block::merge(current->prev, current);
-	if(current->next != 0 && !current->next->is_used())
+	if(current->next != nullptr && !current->next->is_used())
 		current = mm::block::merge(current, current->next);
 }
 
@@ -212,7 +213,7 @@ void * mm::allocate_page()
 		if(!page_stack->is_empty())
 			return page_stack->pop();
 		else
-			return 0;
+			return nullptr;
 	}
 }
 
