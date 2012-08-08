@@ -25,10 +25,8 @@ kostream & uart::operator << (char character)
 		*this << '\r';
 
 	// Wait for the UART to be ready to send:
-	while(!(io::read<char>(uart_base[module], uart::registers::lsr::offset)
-		& uart::registers::lsr::tx_fifo_e));
-	// Write the character to the UART:
-	io::write(character, uart_base[module], uart::registers::thr::offset);
+	while(io::read<char>(uart_base[module], registers::ssr::offset) & registers::ssr::tx_fifo_full);
+	io::write(character, uart_base[module], registers::thr::offset);
 	
 	return *this;
 }
@@ -36,15 +34,38 @@ kostream & uart::operator << (char character)
 // Reads a character from a UART module:
 kistream & uart::operator >> (char & character)
 {
-	// Wait for the UART to be ready to send:
-	while(!(io::read<char>(uart_base[module], uart::registers::lsr::offset)
-		& uart::registers::lsr::rx_fifo_e));
-	character = io::read<char>(uart_base[module], uart::registers::rhr::offset);
+	// TODO: Implement this in a FIFO friendly manner.
 	return *this;
 }
 
 // Constructs a new UART module with the specified parameters:
 uart::uart(int module) : character_device(device_numbers::uart_major, module, "UART"), module(module)
 {
+	if(module != 2) // None of the other UARTs are in use, so we do nothing with them for now.
+		return;
+
+	// Reset the controller:
+	io::or_register<char>(registers::sysc::softreset, uart_base[module], registers::sysc::offset);
+	while(io::read<char>(uart_base[module], registers::sysc::offset) & registers::sysc::softreset);
+
+	// Set power saving bits:
+	io::write<char>(registers::sysc::autoidle|registers::sysc::idlemode(registers::sysc::smart),
+		uart_base[module], registers::sysc::offset);
+
+	// Switch to configuration mode A:
+	io::write<char>(0x80, uart_base[module], registers::lcr::offset);
+
+	// Enable the FIFOs:
+	io::write<char>(registers::fcr::fifo_en, uart_base[module], registers::fcr::offset);
+
+	// Set the baud rate divisor for 115.2 kbps transfer rate:
+	io::write<char>(0x1a, uart_base[module], registers::dll::offset);
+	io::write<char>(0x00, uart_base[module], registers::dlh::offset);
+
+	// Set the transmission format (returning to operational mode):
+	io::write<char>(0x3|registers::lcr::parity_en|registers::lcr::parity_type1, uart_base[module], registers::lcr::offset);
+
+	// Enable UARTx16 mode:
+	io::write<char>(0, uart_base[module], registers::mdr1::offset);
 }
 
