@@ -16,6 +16,7 @@ SOURCE_FILES    := \
 	kstream.cpp \
 	mm.cpp \
 	mmu.cpp \
+	scm.cpp \
 	sd_card.cpp \
 	uart.cpp \
 	utils.cpp
