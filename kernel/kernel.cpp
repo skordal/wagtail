@@ -17,12 +17,15 @@ extern "C" void kernel::kernel_main()
 	message() << "Welcome to Wagtail OS v" << version::major << '.' << version::minor
 		<< " :-)" << kstream::newline;
 
-	// Initialize the SD card:
-	sd_card::initialize();
+	// Initialize the system control module:
+	scm::initialize();
 
 	// Print some memory manager debug info, which makes it easier
 	// to spot memory manager bugs:
 	mm::print_debug_info(message());
+
+	// Initialize the SD card:
+	sd_card::initialize();
 }
 
 extern "C" void kernel::panic()
@@ -31,7 +34,7 @@ extern "C" void kernel::panic()
 	message() << kstream::newline;
 	message() << "*** KERNEL PANIC ***" << kstream::newline;
 	message() << "A fatal error occurred, and Wagtail cannot recover." << kstream::newline;
-	message() << "Please do not panic like your computer, but reset it instead."
+	message() << "Please do not panic like your computer, and hope it works the next time."
 		<< kstream::newline << kstream::newline;
 
 	// Disable all interrupts and hang forever:
