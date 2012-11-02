@@ -5,6 +5,7 @@
 #include "uart.h"
 
 using namespace wagtail;
+using namespace wagtail::hardware::uart;
 
 // UART base addresses:
 void * uart::uart_base[4] = {
