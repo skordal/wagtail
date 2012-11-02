@@ -25,3 +25,22 @@ unsigned int utils::mask_left(int bit)
 	return retval;
 }
 
+unsigned int utils::strlen(const char * string)
+{
+	int count = 0;
+	for(; string[count] != 0; ++count);
+	return count;
+}
+
+char * utils::strdup(const char * string)
+{
+	int i = 0;
+	char * retval = new char[strlen(string) + 1];
+
+	for(; i < strlen(string); ++i)
+		retval[i] = string[i];
+	retval[i + 1] = 0;
+
+	return retval;
+}
+
