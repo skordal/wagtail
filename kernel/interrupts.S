@@ -68,4 +68,9 @@ int_irq:
 
 @ FIQ handler:
 int_fiq:
+	sub lr, #4
+	srsdb sp!, #PROCESSOR_MODE_SVC
+	cps #PROCESSOR_MODE_SVC
+
+	rfeia sp!
 
