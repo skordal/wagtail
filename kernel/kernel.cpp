@@ -23,18 +23,15 @@ extern "C" void kernel::kernel_main()
 	// Print some memory manager debug info, which makes it easier
 	// to spot memory manager bugs:
 	mm::print_debug_info(message());
-
-	// Initialize the SD card:
-	sd_card::initialize();
 }
 
 extern "C" void kernel::panic()
 {
-	// Hope the message() function still works when panicing :-)
+	// Let's hope the message() function still works when panicing :-)
 	message() << kstream::newline;
 	message() << "*** KERNEL PANIC ***" << kstream::newline;
 	message() << "A fatal error occurred, and Wagtail cannot recover." << kstream::newline;
-	message() << "Please do not panic like your computer, and hope it works the next time."
+	message() << "Reboot and try again."
 		<< kstream::newline << kstream::newline;
 
 	// Disable all interrupts and hang forever:

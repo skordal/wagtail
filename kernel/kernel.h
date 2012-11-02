@@ -8,7 +8,6 @@
 #include "kstream.h"
 #include "mm.h"
 #include "scm.h"
-#include "sd_card.h"
 #include "uart.h"
 
 namespace wagtail
