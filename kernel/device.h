@@ -9,44 +9,22 @@
 
 namespace wagtail
 {
-	// Device major numbers:
-	namespace device_numbers
-	{
-		const int special_major = 0;
-		const int uart_major = 1;
-		const int sd_card_major = 2;
-	}
-
 	// Base class for all devices:
 	class device
 	{
 		public:
-			// Creates a device with the specified major and minor
-			// numbers. A device description should also be provided:
-			device(unsigned char major, unsigned char minor,
-				const char * description);
-
-			unsigned char get_major() const { return major; }
-			unsigned char get_minor() const { return minor; }
-			const char * get_description() const { return description; }
-
-			// Compares two device classes by comparing their major and
-			// minor device numbers:
-			bool operator==(const device & dev);
+			// Creates a device with the specified name:
+			device(const char * name) : name(name) {}
+			const char * get_name() const { return name; }
 		private:
-			unsigned char major, minor;
-			const char * description;
+			const char * name;
 	};
-
-	// Prints device information to the specified stream:
-	kostream & operator<<(kostream & stream, const device & dev);
 
 	// Base class for character devices:
 	class character_device : public device, public kostream, public kistream
 	{
 		public:
-			character_device(unsigned char major, unsigned char minor, const char * description)
-				: device(major, minor, description) {}
+			character_device(const char * name) : device(name) {}
 	};
 
 	// Base class for block devices:
@@ -56,9 +34,9 @@ namespace wagtail
 			// Type representing block addresses for block devices:
 			typedef long long block_address_t;
 
-			block_device(unsigned char major, unsigned char minor,
-				unsigned int block_size, const char * description);
+			block_device(unsigned int block_size, const char * name) : device(name), block_size(block_size) {}
 
+			// Gets the block size for this device:
 			virtual unsigned int get_block_size() const { return block_size; }
 
 			// Reads a block from the device:

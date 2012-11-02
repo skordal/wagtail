@@ -6,33 +6,6 @@
 
 using namespace wagtail;
 
-// Constructs a new device node with the specified parameters:
-device::device(unsigned char major, unsigned char minor, const char * description)
-	: major(major), minor(minor), description(description)
-{
-	
-}
-
-// Compares two devices by comparing their major and minor device numbers:
-bool device::operator==(const device & dev)
-{
-	return dev.get_major() == major && dev.get_minor() == minor;
-}
-
-// Prints device information to the specified stream:
-kostream & wagtail::operator<<(kostream & stream, const device & dev)
-{
-	stream << dev.get_major() << ':' << dev.get_minor() << " " << dev.get_description();
-	return stream;
-}
-
-// Constructs a new block device with the specified parameters:
-block_device::block_device(unsigned char major, unsigned char minor, unsigned int block_size,
-	const char * description) : device(major, minor, description), block_size(block_size)
-{
-
-}
-
 // Reads a set of blocks from the block device:
 void block_device::read_blocks(void * buffer, block_address_t base_address, int length)
 {

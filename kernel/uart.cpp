@@ -39,7 +39,7 @@ kistream & uart::operator >> (char & character)
 }
 
 // Constructs a new UART module with the specified parameters:
-uart::uart(int module) : character_device(device_numbers::uart_major, module, "UART"), module(module)
+uart::uart(int module) : character_device("uart"), module(module)
 {
 	if(module != 2) // None of the other UARTs are in use, so we do nothing with them for now.
 		return;
