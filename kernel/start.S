@@ -70,8 +70,7 @@ run_global_constructors:
 	b.n 1b
 2:
 
-start_kernel: @ Enable interrupts and enter the C++ kernel:
-	cpsie if
+start_kernel: @ Enter the C++ kernel:
 	bl kernel_main
 
 run_global_destructors:

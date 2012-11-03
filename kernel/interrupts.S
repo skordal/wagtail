@@ -64,6 +64,10 @@ int_irq:
 	srsdb sp!, #PROCESSOR_MODE_SVC
 	cps #PROCESSOR_MODE_SVC
 
+	push {r0 - r3, ip, lr}
+	bl handle_irq
+	pop {r0 - r3, ip, lr}
+
 	rfeia sp!
 
 @ FIQ handler:

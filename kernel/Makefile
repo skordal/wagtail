@@ -7,11 +7,12 @@
 include ../config.mk
 
 # Source files to build:
-SOURCE_FILES    := \
+SOURCE_FILES := \
 	aborts.cpp \
 	clock_mgr.cpp \
 	cxx_support.cpp \
 	device.cpp \
+	irq_handler.cpp \
 	kernel.cpp \
 	kstream.cpp \
 	mm.cpp \

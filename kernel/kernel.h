@@ -5,6 +5,7 @@
 #ifndef WAGTAIL_KERNEL_H
 #define WAGTAIL_KERNEL_H
 
+#include "irq_handler.h"
 #include "kstream.h"
 #include "mm.h"
 #include "scm.h"

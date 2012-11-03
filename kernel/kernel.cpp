@@ -17,6 +17,9 @@ extern "C" void kernel::kernel_main()
 	message() << "Welcome to Wagtail OS v" << version::major << '.' << version::minor
 		<< " :-)" << kstream::newline;
 
+	// Initialize the IRQ handler:
+	irq_handler::initialize();
+
 	// Initialize the system control module:
 	scm::initialize();
 
