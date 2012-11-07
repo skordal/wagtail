@@ -27,14 +27,14 @@ unsigned int utils::mask_left(int bit)
 
 unsigned int utils::strlen(const char * string)
 {
-	int count = 0;
+	unsigned int count = 0;
 	for(; string[count] != 0; ++count);
 	return count;
 }
 
 char * utils::strdup(const char * string)
 {
-	int i = 0;
+	unsigned int i = 0;
 	char * retval = new char[strlen(string) + 1];
 
 	for(; i < strlen(string); ++i)
