@@ -5,6 +5,8 @@
 #ifndef WAGTAIL_IRQ_HANDLER_H
 #define WAGTAIL_IRQ_HANDLER_H
 
+#include <functional>
+
 #include "io.h"
 #include "mmu.h"
 
@@ -17,17 +19,11 @@ namespace wagtail
 	class irq_handler
 	{
 		public:
-			typedef struct
-			{
-				void (* handler_func)(int number, void * data);
-				void * data;
-			} irq_handler_t;
-
 			static void initialize();
 			static irq_handler * get() { return global_irq_handler; }
 
 			// Registers an IRQ handler and enables the interrupt:
-			void register_handler(const irq_handler_t & handler, int number, int priority = PRIORITY_MID);
+			void register_handler(std::function<void(int)> handler, int number, int priority = PRIORITY_MID);
 			// Unregisters and disables an IRQ interrupt handler:
 			void unregister_handler(int number);
 
@@ -40,11 +36,10 @@ namespace wagtail
 			static const int DEFAULT_THRESHOLD  = THRESHOLD_DISABLED;
 		private:
 			irq_handler();
-
 			void handle_irq(int number);
 
 			void * virtual_base;
-			irq_handler_t * irq_handlers[NUMBER_OF_IRQS];
+			std::function<void(int)> irq_handlers[NUMBER_OF_IRQS];
 
 			static irq_handler * global_irq_handler;
 

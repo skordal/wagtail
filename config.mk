@@ -14,7 +14,7 @@ MKIMAGE ?= mkimage
 RM      ?= rm
 
 # Build flags:
-CXXFLAGS  += -O2 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon -nostdinc \
+CXXFLAGS  += -O2 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon \
 	-ffreestanding -Wa,-mcpu=cortex-a8+sec -Wall -mthumb \
 	-mno-thumb-interwork -fno-builtin -fno-rtti -fno-exceptions \
 	-falign-functions=4 -std=gnu++0x

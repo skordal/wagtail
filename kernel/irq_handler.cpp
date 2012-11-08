@@ -13,7 +13,6 @@ irq_handler * irq_handler::global_irq_handler = nullptr;
 extern "C" void handle_irq()
 {
 	int irq_number = io::read<int>(irq_handler::get()->virtual_base, registers::sir_irq::offset) & 0x7f;
-	kernel::message() << "IRQ interrupt: " << irq_number << kstream::newline;
 	irq_handler::get()->handle_irq(irq_number);
 
 	asm volatile("dsb\n\t");
@@ -41,18 +40,13 @@ irq_handler::irq_handler() : virtual_base(mmu::map_device((void *) 0x48200000, 4
 	io::write<int>(registers::protection::enable, virtual_base, registers::protection::offset);
 }
 
-void irq_handler::register_handler(const irq_handler_t & handler, int number, int priority)
+void irq_handler::register_handler(std::function<void(int)> handler, int number, int priority)
 {
 	int mir_num = number >> 5;
 	int bit = number & 0x1f;
 
-	irq_handler_t * h = new irq_handler_t;
-	h->handler_func = handler.handler_func;
-	h->data = handler.data;
-
-	irq_handlers[number] = h;
-
-	kernel::message() << "IRQ" << number << " handler registered: " << (void *) h->handler_func << kstream::newline;
+	irq_handlers[number] = handler;
+	kernel::message() << "IRQ(" << number << "): handler registered" << kstream::newline;
 
 	// Set the interrupt priority:
 	io::write<int>((priority << 2) & 0xfc, virtual_base, registers::ilr_base::offset + (priority << 2));
@@ -65,18 +59,14 @@ void irq_handler::unregister_handler(int number)
 	int mir_num = number >> 5;
 	int bit = number & 0x1f;
 
-	if(irq_handlers[number] == nullptr)
-		return;
-	else
-		delete irq_handlers[number];
-
+	irq_handlers[number] = nullptr;
 	io::write<int>(1 << bit, virtual_base, registers::registers::mir_set_base::offset + (0x20 * mir_num));
 }
 
 void irq_handler::handle_irq(int number)
 {
-	if(irq_handlers[number] != nullptr)
-		irq_handlers[number]->handler_func(number, irq_handlers[number]->data);
+	if(irq_handlers[number] != nullptr) // Prevents bad_function_call exception
+		irq_handlers[number](number);
 	else
 		kernel::message() << "Warning: no IRQ handler for IRQ " << number << "!" << kstream::newline;
 }
