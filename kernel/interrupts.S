@@ -22,7 +22,7 @@ interrupt_handlers:
 	b.w int_svc
 	b.w int_prefetch_abort
 	b.w int_data_abort
-	movs pc, lr @ Unused interrupt
+	movs.w pc, lr @ Unused interrupt
 	b.w int_irq
 	b.w int_fiq
 
