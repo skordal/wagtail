@@ -52,6 +52,15 @@ enable_mmu: @ Enables the MMU:
 	@ Set the new stack pointer:
 	ldr sp, =0xa0000000
 
+enable_neon: @ Enables access to the Neon and VFP co-processors:
+	mov r0, #(0b11 << 20)|(0b11 << 22)
+	mcr p15, 0, r0, c1, c0, 2
+	isb
+
+	vmrs r0, FPEXC
+	orrs r0, #(1 << 30)
+	vmsr FPEXC, r0
+
 initialize_mm: @ Initializes the kernel memory manager:
 	bl mm_init
 
