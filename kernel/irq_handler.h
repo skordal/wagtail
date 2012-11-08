@@ -11,7 +11,6 @@
 #include "hardware/intc.h"
 
 extern "C" void handle_irq();
-extern "C" void test_irq(int number, void * data);
 
 namespace wagtail
 {
