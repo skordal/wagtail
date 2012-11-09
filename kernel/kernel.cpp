@@ -23,6 +23,9 @@ extern "C" void kernel::kernel_main()
 	// Initialize the system control module:
 	scm::initialize();
 
+	// Initialize the SD card controller:
+	sd::initialize();
+
 	// Print some memory manager debug info, which makes it easier
 	// to spot memory manager bugs:
 	mm::print_debug_info(message());

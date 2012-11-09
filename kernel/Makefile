@@ -18,6 +18,7 @@ SOURCE_FILES := \
 	mm.cpp \
 	mmu.cpp \
 	scm.cpp \
+	sd.cpp \
 	uart.cpp \
 	utils.cpp
 
