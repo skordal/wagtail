@@ -10,9 +10,8 @@ Goals
 -----
 
 The goal of Wagtail is to be a simple operating system for the BeagleBoard, exploiting various C++ features in a way that benefits operating system development. Portability between compilers is not a goal.
-The goal of Wagtail is to be an exceedingly simple operating system. The most immediate goal is to get the operating system to load and execute applications.
 
-Another goal of Wagtail is to exploit various C++ features in a way that benefits operating system development. Portability is not a goal, neither across processor architectures nor compilers.
+Another goal of Wagtail is to exploit various C++ features in a way that benefits operating system development.
 
 Current status
 --------------
