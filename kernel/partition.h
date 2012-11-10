@@ -6,6 +6,7 @@
 #define WAGTAIL_PARTITION_H
 
 #include "device.h"
+#include "device_mgr.h"
 #include "utils.h"
 
 namespace wagtail
@@ -26,6 +27,8 @@ namespace wagtail
 				{ return device->write_block(buffer, address); }
 			bool write_blocks(const void * buffer, block_address_t address, int length) override
 				{ return device->write_blocks(buffer, address, length); }
+
+			char get_type() const { return type; }
 		private:
 			// Creates a partition device name from the basename of
 			// the parent block drive and the partition number, looking
