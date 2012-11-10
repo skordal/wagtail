@@ -32,15 +32,19 @@ unsigned int utils::strlen(const char * string)
 	return count;
 }
 
-char * utils::strdup(const char * string)
+char * utils::strcpy(char * dest, const char * source)
 {
-	unsigned int i = 0;
-	char * retval = new char[strlen(string) + 1];
+	for(unsigned int i = 0; i < strlen(source) + 1; ++i)
+		dest[i] = source[i];
+	return dest;
+}
 
-	for(; i < strlen(string); ++i)
-		retval[i] = string[i];
-	retval[i + 1] = 0;
+char * utils::strcat(char * dest, const char * source)
+{
+	unsigned int offset = strlen(dest);
+	for(unsigned int i = 0; i < strlen(source) + 1; ++i)
+		dest[offset + i] = source[i];
 
-	return retval;
+	return dest;
 }
 

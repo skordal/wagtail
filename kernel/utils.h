@@ -15,8 +15,11 @@ namespace wagtail
 		// Calculates the length of a C string:
 		unsigned int strlen(const char * string);
 
-		// Duplicates a C string:
-		char * strdup(const char * string) __attribute((warn_unused_result));
+		// Copies a C string into another buffer:
+		char * strcpy(char * dest, const char * source);
+
+		// Appends a C string onto another C string:
+		char * strcat(char * dest, const char * source);
 	}
 }
 
