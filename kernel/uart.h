@@ -25,7 +25,7 @@ namespace wagtail
 			kistream & operator >> (char & character);
 		private:
 			// Constructs a UART object for the specified UART module:
-			uart(int module);
+			uart(int module, const char * device_name);
 
 			// The number of this module:
 			int module;
