@@ -5,6 +5,7 @@
 #ifndef WAGTAIL_DEVICE_H
 #define WAGTAIL_DEVICE_H
 
+#include "device_mgr.h"
 #include "kstream.h"
 
 namespace wagtail
@@ -14,10 +15,12 @@ namespace wagtail
 	{
 		public:
 			// Creates a device with the specified name:
-			device(const char * name) : name(name) {}
+			device(const char * name) : name(name), number(device_mgr::register_device(this)) {}
 			const char * get_name() const { return name; }
+			int get_number() const { return number; }
 		private:
 			const char * name;
+			unsigned int number;
 	};
 
 	// Base class for character devices:

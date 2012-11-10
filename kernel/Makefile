@@ -12,6 +12,7 @@ SOURCE_FILES := \
 	clock_mgr.cpp \
 	cxx_support.cpp \
 	device.cpp \
+	device_mgr.cpp \
 	irq_handler.cpp \
 	kernel.cpp \
 	kstream.cpp \
