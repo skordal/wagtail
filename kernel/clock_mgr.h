@@ -28,7 +28,7 @@ namespace wagtail
 
 	// This class controls clocks for various modules in the device
 	// using the PRCM's clock module:
-	class clock_mgr
+	class clock_mgr final
 	{
 		public:
 			// Enables a clock:

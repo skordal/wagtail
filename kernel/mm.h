@@ -19,7 +19,7 @@ namespace wagtail
 	// MMU has been enabled:
 	extern "C" void mm_init();
 
-	class mm
+	class mm final
 	{
 		public:
 			// Initializes the memory and page manager:

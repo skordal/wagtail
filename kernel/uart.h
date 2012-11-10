@@ -13,16 +13,16 @@
 
 namespace wagtail
 {
-	class uart : public character_device
+	class uart final : public character_device
 	{
 		public:
 			// Gets the uart object for the specified UART module:
 			static uart & get(int module) { return uart_modules[module]; }
 
 			// Writes a character to an UART module:
-			kostream & operator << (char character);
+			kostream & operator << (char character) override;
 			// Reads a character from a UART module:
-			kistream & operator >> (char & character);
+			kistream & operator >> (char & character) override;
 		private:
 			// Constructs a UART object for the specified UART module:
 			uart(int module, const char * device_name);

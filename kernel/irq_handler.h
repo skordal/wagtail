@@ -16,7 +16,7 @@ extern "C" void handle_irq();
 
 namespace wagtail
 {
-	class irq_handler
+	class irq_handler final
 	{
 		public:
 			static void initialize();

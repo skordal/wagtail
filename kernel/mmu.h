@@ -12,7 +12,7 @@ namespace wagtail
 	// Function called from assembler code to initialize the MMU:
 	extern "C" void mmu_init();
 
-	class mmu
+	class mmu final
 	{
 		public:
 			// Memory interval access permissions, Kernel_User:
