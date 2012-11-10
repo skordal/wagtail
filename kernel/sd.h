@@ -8,21 +8,27 @@
 #include "clock_mgr.h"
 #include "device.h"
 #include "mmu.h"
+#include "partition.h"
 
 #include "hardware/sd.h"
 
 namespace wagtail
 {
-	class sd : public block_device
+	// SD card driver class.
+	// TODO: Use DMA for the reading and writing functionality.
+	class sd final : public block_device
 	{
 		public:
 			// Initializes the SD module instance:
 			static void initialize();
 
-			// TODO: Implement read and write functions.
-			void read_block(void * buffer, block_address_t address) {}
-			void write_block(void * buffer, block_address_t address) {}
+			// Reads a block of data from the SD card:
+			bool read_block(void * buffer, block_address_t address) override;
+			// Writes a block of data to the SD card:
+			bool write_block(const void * buffer, block_address_t address) override;
 
+			// Only one SD/MMC controller is in use on the BeagleBoard, so only that
+			// controller is used in Wagtail.
 			static constexpr void * BASE_ADDRESS = reinterpret_cast<void *>(0x4809c000);
 		private:
 			// Initializes the SD controller:
@@ -31,17 +37,23 @@ namespace wagtail
 			// Initializes a newly connected card:
 			void initialize_card();
 
+			// Reads the partition table of an initialized card:
+			void read_partition_table();
+
 			// Various functions for sending commands to the card:
-			void send_cmd0();
-			bool send_cmd2();
-			bool send_cmd3();
-			bool send_cmd8();
-			bool send_cmd55();
-			int send_acmd41(); // Returns -1 on error, otherwise returns the command response.
+			void send_cmd0();	// GO_IDLE_STATE
+			bool send_cmd2();	// ALL_SEND_CID
+			bool send_cmd3();	// SEND_RELATIVE_ADDR
+			bool send_cmd7();	// SELECT/DESELECT_CARD
+			bool send_cmd8();	// SEND_IF_COND
+			bool send_cmd55();	// APP_CMD
+			int send_acmd41();	// SD_SEND_OP_COND
 
 			enum class sd_status
 			{
 				card_error,
+				data_timeout_error, data_end_bit_error,
+				data_crc_error, command_end_bit_error,
 				command_crc_error, command_index_error,
 				command_timeout, command_complete
 			};
@@ -55,6 +67,7 @@ namespace wagtail
 
 			bool card_initialized = false;
 			unsigned short rca = 0x0000;
+			partition * partitions[4] = {nullptr, nullptr, nullptr, nullptr};
 
 			void * virtual_base;
 			static sd * sd_module;

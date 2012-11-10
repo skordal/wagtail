@@ -39,6 +39,8 @@ BEGIN_MODULE(sd)
 		BITFIELD(dval,	9, 2)
 	REGISTER_END()
 
+	REGISTER(blk, 0x104)
+
 	REGISTER(rsp10, 0x110)
 	REGISTER(rsp32, 0x114)
 	REGISTER(rsp54, 0x118)
@@ -58,6 +60,8 @@ BEGIN_MODULE(sd)
 		BITFIELD(cmd_type, 22, 2)
 		BITFIELD(indx, 24, 6)
 	REGISTER_END()
+
+	REGISTER(data, 0x120)
 
 	REGISTER_BEGIN(pstate, 0x124)
 		BITNAME(dati,	1)

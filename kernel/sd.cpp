@@ -15,7 +15,56 @@ void sd::initialize()
 	sd_module = new sd;
 }
 
-sd::sd() : block_device(512, "sd"), virtual_base(mmu::map_device(sd::BASE_ADDRESS, 4096))
+bool sd::read_block(void * buffer, block_address_t address)
+{
+	kernel::message() << "Going to read block " << (int) address << ": " << kstream::newline;
+
+	// Wait for the data line to be ready:
+	while(io::read<int>(virtual_base, registers::pstate::offset) & registers::pstate::dati);
+
+	kernel::message() << "\tCMD17: ";
+
+	io::write(0xffffff, virtual_base, registers::stat::offset);
+	io::write(registers::ie::cc|registers::ie::tc|registers::ie::cto|registers::ie::brr|
+		registers::ie::dcrc|registers::ie::deb|registers::ie::dto,
+		virtual_base, registers::ie::offset);
+
+	io::write(static_cast<int>(address), virtual_base, registers::arg::offset);
+	io::write(17 << registers::cmd::indx|0x2 << registers::cmd::rsp_type|registers::cmd::dp|
+		registers::cmd::ccce|registers::cmd::ddir, virtual_base, registers::cmd::offset);
+
+	sd_status status = wait_for_status();
+
+	if(status != sd_status::command_complete)
+	{
+		kernel::message() << get_error_message(status) << kstream::newline;
+		return false;
+	}
+
+	kernel::message() << "sent" << kstream::newline;
+
+	// Read the data:
+	kernel::message() << "Receiving data: ";
+	while(!(io::read<int>(virtual_base, registers::stat::offset) & registers::stat::brr));
+	for(int i = 0; i < 128; ++i)
+		((int *) buffer)[i] = io::read<int>(virtual_base, registers::data::offset);
+	io::or_register(registers::stat::brr, virtual_base, registers::stat::offset);
+
+	// Assume the transmission will complete and just wait:
+	while(!(io::read<int>(virtual_base, registers::stat::offset) & registers::stat::tc));
+	kernel::message() << "ok" << kstream::newline;
+	return true;
+}
+
+bool sd::write_block(const void * buffer, block_address_t address)
+{
+	// Wait for the data line to be ready:
+	while(io::read<int>(virtual_base, registers::pstate::offset) & registers::pstate::dati);
+	// TODO: Write me
+	return false;
+}
+
+sd::sd() : block_device(512, "sd0"), virtual_base(mmu::map_device(sd::BASE_ADDRESS, 4096))
 {
 	kernel::message() << "Initializing SD module:" << kstream::newline;
 
@@ -40,8 +89,6 @@ sd::sd() : block_device(512, "sd"), virtual_base(mmu::map_device(sd::BASE_ADDRES
 
 	kernel::message() << "\tInitializing SD bus: ";
 
-	kernel::message() << io::read<void *>(virtual_base, registers::sysctl::offset) << " ";
-
 	// Enable power on the SD bus:
 	io::write(0x6 << registers::hctl::sdvs, virtual_base, registers::hctl::offset);
 	io::or_register(registers::hctl::sdbp, virtual_base, registers::hctl::offset);
@@ -59,6 +106,9 @@ sd::sd() : block_device(512, "sd"), virtual_base(mmu::map_device(sd::BASE_ADDRES
 
 	kernel::message() << io::read<void *>(virtual_base, registers::sysctl::offset) << " ";
 	kernel::message() << "ok" << kstream::newline;
+
+	// Set the block length register:
+	io::write<int>(0x200, virtual_base, registers::blk::offset);
 
 	// TODO: handle checking for card present and ejecting and inserting cards.
 	initialize_card();
@@ -108,7 +158,45 @@ void sd::initialize_card()
 	if(!send_cmd3())
 		return;
 
+	// Select/enable the card, send CMD7:
+	if(!send_cmd7())
+		return;
+
 	card_initialized = true;
+	read_partition_table();
+}
+
+// TODO: fix the return value for this function.
+void sd::read_partition_table()
+{
+	// Read the card's MBR:
+	char * buffer = new char[512];
+	read_block(buffer, 0);
+
+	int test = *((int *)(buffer + 508));
+	kernel::message() << (void *) test << kstream::newline;
+
+	for(int i = 0; i < 4; ++i)
+	{
+		block_address_t start_address, end_address;
+		char type = buffer[446 + 4 + (i * 16)];
+
+		// Due to the start and end addresses being split between two
+		// words in memory, the following is neccessary to assemble the
+		// addresses:
+		start_address =
+			(*((unsigned int *)(buffer + 446 + 8 + (i * 16) - 2)) >> 16) |
+			(*((unsigned int *)(buffer + 446 + 8 + (i * 16) + 2)) << 16);
+		end_address =
+			((*((unsigned int *)(buffer + 446 + 12 + (i * 16) - 2)) >> 16) |
+			(*((unsigned int *)(buffer + 446 + 12 + (i * 16) + 2)) << 16))
+			+ start_address;
+
+		if(type != 0)
+			partitions[i] = new partition(this, start_address, end_address, type, i);
+	}
+
+	delete[] buffer;
 }
 
 void sd::send_cmd0()
@@ -181,6 +269,27 @@ bool sd::send_cmd3()
 	return true;
 }
 
+bool sd::send_cmd7()
+{
+	kernel::message() << "\tCMD7: ";
+
+	io::write(0xffffffff, virtual_base, registers::stat::offset);
+	io::write(registers::ie::cc|registers::ie::cto, virtual_base, registers::ie::offset);
+
+	io::write(rca << 16, virtual_base, registers::arg::offset);
+	io::write(7 << registers::cmd::indx|0x3 << registers::cmd::rsp_type, virtual_base, registers::cmd::offset);
+
+	sd_status status = wait_for_status();
+	if(status != sd_status::command_complete)
+	{
+		kernel::message() << get_error_message(status) << kstream::newline;
+		return false;
+	}
+
+	kernel::message() << "ok" << kstream::newline;
+	return true;
+}
+
 bool sd::send_cmd8()
 {
 	kernel::message() << "\tCMD8: ";
@@ -236,6 +345,7 @@ bool sd::send_cmd55()
 	}
 }
 
+// Returns the reply data, or -1 if an error occurs:
 int sd::send_acmd41()
 {
 	if(!send_cmd55())
@@ -266,6 +376,12 @@ sd::sd_status sd::wait_for_status()
 	int status;
 	do {
 		status = io::read<int>(virtual_base, registers::stat::offset);
+		if(status & registers::stat::dcrc)
+			return sd_status::data_crc_error;
+		if(status & registers::stat::dto)
+			return sd_status::data_timeout_error;
+		if(status & registers::stat::deb)
+			return sd_status::data_end_bit_error;
 		if(status & registers::stat::ccrc)
 			return sd_status::command_crc_error;
 		if(status & registers::stat::cerr)

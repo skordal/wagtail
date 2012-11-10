@@ -17,6 +17,7 @@ SOURCE_FILES := \
 	kstream.cpp \
 	mm.cpp \
 	mmu.cpp \
+	partition.cpp \
 	scm.cpp \
 	sd.cpp \
 	uart.cpp \
