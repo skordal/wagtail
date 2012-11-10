@@ -16,7 +16,10 @@ namespace wagtail
 {
 	namespace kernel
 	{
-		// Returns a stream for printing a message to the kernel log:
+		// Returns a stream for printing a message to the kernel log.
+		// NOTE: this function cannot be used in global static constructors,
+		//       because the output device may not have been initialized at
+		//       the point that the global static constructors are run.
 		kostream & message();
 
 		// Kernel entry point, called from assembler code:
