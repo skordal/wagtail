@@ -15,7 +15,9 @@ namespace wagtail
 	{
 		public:
 			// Creates a device with the specified name:
-			device(const char * name) : name(name), number(device_mgr::register_device(this)) {}
+			device(const char * name) : name(name), number(device_mgr::get()->register_device(this)) {}
+			virtual ~device() {}
+
 			const char * get_name() const { return name; }
 			int get_number() const { return number; }
 		private:

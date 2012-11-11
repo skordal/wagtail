@@ -5,6 +5,8 @@
 #ifndef WAGTAIL_DEVICE_MGR_H
 #define WAGTAIL_DEVICE_MGR_H
 
+#include "utils.h"
+
 namespace wagtail
 {
 	class device;
@@ -20,20 +22,11 @@ namespace wagtail
 			// Gets the device manager instance:
 			static device_mgr * get() { return devmgr; }
 
-			// Registers a device with the device manager. A device number is
-			// returned. These numbers are dynamically allocated, so they may
-			// not be the same each time the same device is registered.
-			static unsigned int register_device(device * dev)
-				{ return get()->register_dev(dev); }
-			// Unregisters a device by its device number:
-			static void unregister_device(unsigned int number)
-				{ get()->unregister_dev(number); }
-			static device * get_device(unsigned int number)
-				{ return get()->get_dev(number); }
+			unsigned int register_device(device * dev);
+			void unregister_device(unsigned int number);
 
-			unsigned int register_dev(device * dev);
-			void unregister_dev(unsigned int number);
-			device * get_dev(unsigned int number) const { return devices[number]; }
+			device * get_device_by_name(const char * name) const;
+			device * get_device_by_number(unsigned int number) const { return devices[number]; }
 		private:
 			device_mgr();
 			~device_mgr() { delete[] devices; }

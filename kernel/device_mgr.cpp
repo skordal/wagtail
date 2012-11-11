@@ -9,7 +9,7 @@ using namespace wagtail;
 
 device_mgr * device_mgr::devmgr = new device_mgr;
 
-unsigned int device_mgr::register_dev(device * dev)
+unsigned int device_mgr::register_device(device * dev)
 {
 	unsigned int retval = next_devnum;
 
@@ -32,11 +32,19 @@ unsigned int device_mgr::register_dev(device * dev)
 	return retval;
 }
 
-void device_mgr::unregister_dev(unsigned int number)
+void device_mgr::unregister_device(unsigned int number)
 {
 	devices[number] = nullptr;
 	if(number < next_devnum)
 		next_devnum = number;
+}
+
+device * device_mgr::get_device_by_name(const char * name) const
+{
+	for(int i = 0; i < PREALLOCATE_DEVICES; ++i)
+		if(devices[i] != nullptr && utils::str_equals(devices[i]->get_name(), name))
+			return devices[i];
+	return nullptr;
 }
 
 device_mgr::device_mgr()
