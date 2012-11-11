@@ -41,10 +41,8 @@ bool sd::read_block(void * buffer, block_address_t address)
 		return false;
 	}
 
-	kernel::message() << "sent" << kstream::newline;
-
 	// Read the data:
-	kernel::message() << "Receiving data: ";
+	kernel::message() << "receiving data... ";
 	while(!(io::read<int>(virtual_base, registers::stat::offset) & registers::stat::brr));
 	for(int i = 0; i < 128; ++i)
 		((int *) buffer)[i] = io::read<int>(virtual_base, registers::data::offset);
@@ -166,15 +164,11 @@ void sd::initialize_card()
 	read_partition_table();
 }
 
-// TODO: fix the return value for this function.
 void sd::read_partition_table()
 {
 	// Read the card's MBR:
 	char * buffer = new char[512];
 	read_block(buffer, 0);
-
-	int test = *((int *)(buffer + 508));
-	kernel::message() << (void *) test << kstream::newline;
 
 	for(int i = 0; i < 4; ++i)
 	{
