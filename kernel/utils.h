@@ -20,6 +20,9 @@ namespace wagtail
 
 		// Appends a C string onto another C string:
 		char * strcat(char * dest, const char * source);
+
+		// Compares two C strings for equality:
+		bool str_equals(const char * a, const char * b);
 	}
 }
 

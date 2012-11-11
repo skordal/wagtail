@@ -48,3 +48,15 @@ char * utils::strcat(char * dest, const char * source)
 	return dest;
 }
 
+bool utils::str_equals(const char * a, const char * b)
+{
+	if(strlen(a) != strlen(b))
+		return false;
+	else {
+		for(unsigned int i = 0; i < strlen(a); ++i)
+			if(a[i] != b[i])
+				return false;
+		return true;
+	}
+}
+
