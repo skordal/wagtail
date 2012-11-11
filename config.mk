@@ -17,7 +17,7 @@ RM      ?= rm
 CXXFLAGS  += -O2 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon \
 	-ffreestanding -Wa,-mcpu=cortex-a8+sec -Wall -mthumb \
 	-mno-thumb-interwork -fno-builtin -fno-rtti -fno-exceptions \
-	-falign-functions=4 -std=gnu++0x
+	-falign-functions=4 -std=gnu++0x -fno-use-cxa-atexit
 LDFLAGS += -nostdlib
 MKIMAGE_FLAGS  = -A arm -O linux -T kernel -C none -a 0x80008000 \
 	-e 0x80008000 -n WagtailOS
