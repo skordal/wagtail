@@ -17,8 +17,6 @@ void sd::initialize()
 
 bool sd::read_block(void * buffer, block_address_t address)
 {
-	kernel::message() << "Going to read block " << (int) address << ": " << kstream::newline;
-
 	// Wait for the data line to be ready:
 	while(io::read<int>(virtual_base, registers::pstate::offset) & registers::pstate::dati);
 
