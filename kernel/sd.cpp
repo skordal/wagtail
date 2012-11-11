@@ -100,7 +100,6 @@ sd::sd() : block_device(512, "sd0"), virtual_base(mmu::map_device(sd::BASE_ADDRE
 	while(!(io::read<int>(virtual_base, registers::sysctl::offset) & registers::sysctl::ics));
 	io::or_register(registers::sysctl::cen, virtual_base, registers::sysctl::offset);
 
-	kernel::message() << io::read<void *>(virtual_base, registers::sysctl::offset) << " ";
 	kernel::message() << "ok" << kstream::newline;
 
 	// Set the block length register:
