@@ -14,6 +14,58 @@ partition::partition(block_device * device, block_address_t start_addr, block_ad
 	kernel::message() << "Partition registered: " << name << kstream::newline;
 }
 
+// FIXME: The I/O methods below assumes the block address fits within 32 bits. This is
+// FIXME: always the case on the Beagleboard, but block_address_t allows 64 bit addresses,
+// FIXME: so this should be fixed some time.
+
+bool partition::read_block(void * buffer, block_address_t address)
+{
+	if(address < start || address > end)
+	{
+		kernel::message() << name << ": cannot read from address " << (void *) address
+			<< " it is outside the partition!" << kstream::newline;
+		return false;
+	}
+
+	return device->read_block(buffer, address);
+}
+
+bool partition::read_blocks(void * buffer, block_address_t address, int length)
+{
+	if(address < start || address > end)
+	{
+		kernel::message() << name << ": cannot read from address " << (void *) address
+			<< " it is outside the partition!" << kstream::newline;
+		return false;
+	}
+
+	return device->read_blocks(buffer, address, length);
+}
+
+bool partition::write_block(const void * buffer, block_address_t address)
+{
+	if(address < start || address > end)
+	{
+		kernel::message() << name << ": cannot write to address " << (void *) address
+			<< " it is outside the partition!" << kstream::newline;
+		return false;
+	}
+
+	return device->write_block(buffer, address);
+}
+
+bool partition::write_blocks(const void * buffer, block_address_t address, int length)
+{
+	if(address < start || address > end)
+	{
+		kernel::message() << name << ": cannot write to address " << (void *) address
+			<< " it is outside the partition!" << kstream::newline;
+		return false;
+	}
+
+	return device->write_blocks(buffer, address, length);
+}
+
 char * partition::partname(const char * basename, int partnum)
 {
 	char * buffer = new char[utils::strlen(basename) + 3];
