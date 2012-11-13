@@ -25,11 +25,35 @@ unsigned int utils::mask_left(int bit)
 	return retval;
 }
 
+int utils::index(const char * input, char c)
+{
+	for(unsigned int i = 0; i < strlen(input); ++i)
+		if(input[i] == c)
+			return i;
+	return -1;
+}
+
+char * utils::substring(const char * input, int a, int b)
+{
+	char * retval = new char[b - a + 1];
+	for(int i = a; i < b; ++i)
+		retval[i - a] = input[i];
+	retval[b - a] = 0;
+	return retval;
+}
+
 unsigned int utils::strlen(const char * string)
 {
 	unsigned int count = 0;
 	for(; string[count] != 0; ++count);
 	return count;
+}
+
+char * utils::strdup(const char * source)
+{
+	char * retval = new char[strlen(source) + 1];
+	strcpy(retval, source);
+	return retval;
 }
 
 char * utils::strcpy(char * dest, const char * source)
