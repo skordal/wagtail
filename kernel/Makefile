@@ -39,13 +39,13 @@ OBJECT_FILES = $(ASSEMBLER_FILES:.S=.o) \
 .PHONY: all clean
 
 all: $(OBJECT_FILES)
-	$(LD) $(LDFLAGS) -T wagtail.ld -o wagtail.elf $(OBJECT_FILES)
+	$(LD) $(LDFLAGS) -T wagtail.ld -o wagtail.elf -Map system.map $(OBJECT_FILES)
 	$(OBJCOPY) -S -x -O binary -j .text -j .data wagtail.elf wagtail.bin
 	$(MKIMAGE) $(MKIMAGE_FLAGS) -d wagtail.bin uImage # > /dev/null
 
 clean:
 	-$(RM) $(OBJECT_FILES)
-	-$(RM) wagtail.elf wagtail.bin uImage
+	-$(RM) wagtail.elf wagtail.bin uImage system.map
 
 %.o: %.S
 	$(CXX) -c $(CXXFLAGS) $< -o $@

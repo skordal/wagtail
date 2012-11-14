@@ -4,6 +4,8 @@ wagtail.elf
 wagtail.bin
 uImage
 
+system.map
+
 # Ignore vim swap files:
 .*.swp
 .*.swo
