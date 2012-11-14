@@ -13,6 +13,9 @@ SOURCE_FILES := \
 	cxx_support.cpp \
 	device.cpp \
 	device_mgr.cpp \
+	direntry.cpp \
+	filesystem.cpp \
+	filesystems/fat32.cpp \
 	irq_handler.cpp \
 	kernel.cpp \
 	kstream.cpp \
