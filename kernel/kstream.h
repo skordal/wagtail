@@ -5,6 +5,8 @@
 #ifndef WAGTAIL_KSTREAM_H
 #define WAGTAIL_KSTREAM_H
 
+#include "kstring.h"
+
 namespace wagtail
 {
 	// Kernel output stream:
@@ -16,6 +18,8 @@ namespace wagtail
 			virtual kostream & operator << (char character) = 0;
 			// Puts a string into the stream:
 			virtual kostream & operator << (const char * string);
+			// Puts a kstring into the stream:
+			virtual kostream & operator << (const kstring & string);
 			// Prints the hexadecimal address of a pointer:
 			virtual kostream & operator << (void * pointer);
 			// Prints a decimal number:

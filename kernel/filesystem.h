@@ -6,6 +6,7 @@
 #define WAGTAIL_FILESYSTEM_H
 
 #include "direntry.h"
+#include "kstring.h"
 #include "partition.h"
 
 namespace wagtail
@@ -29,8 +30,8 @@ namespace wagtail
 			// Gets the amount of free space on the filesystem in bytes:
 			virtual unsigned long long get_free_space() const = 0;
 
-			// Gets the filesystem label, if any:
-			virtual const char * get_label() const { return ""; }
+			// Gets the filesystem label:
+			virtual const kstring & get_label() const = 0;
 
 			// Returns whether this filesystem can be used. If a fatal error occurs
 			// during initialization of a filesystem driver, usable is set to false:
@@ -39,7 +40,7 @@ namespace wagtail
 			// Reads the specified directory and returns a pointer to the first directory
 			// entry for the directory. If there are is no such directory, nullptr is
 			// returned.
-			virtual direntry * read_directory(const char * path) = 0;
+			virtual direntry * read_directory(const kstring & path) = 0;
 		protected:
 			filesystem(partition * part) : part(part) {}
 			virtual ~filesystem() {}

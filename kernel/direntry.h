@@ -6,6 +6,7 @@
 #define WAGTAIL_DIRENTRY_H
 
 #include "filesystem.h"
+#include "kstring.h"
 #include "utils.h"
 
 namespace wagtail
@@ -21,19 +22,18 @@ namespace wagtail
 				file, directory, character_device, block_device, symbolic_link
 			};
 
-			direntry(const char * name, direntry::type file_type, filesystem * fs,
+			direntry(const kstring & name, direntry::type file_type, filesystem * fs,
 				unsigned long long file_size = 0, unsigned short permissions = 00666,
 				unsigned short owner = 0, unsigned short group = 0);
-			~direntry();
 
 			void set_next(direntry * next) { this->next = next; }
 			direntry * get_next() const { return next; }
 
-			const char * get_name() const { return name; }
+			const kstring & get_name() const { return name; }
 			direntry::type get_type() const { return entry_type; }
 			unsigned long long get_size() const { return file_size; }
 		private:
-			char * name;
+			kstring name;
 			type entry_type;
 
 			direntry * next = nullptr;

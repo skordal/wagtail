@@ -19,6 +19,7 @@ SOURCE_FILES := \
 	irq_handler.cpp \
 	kernel.cpp \
 	kstream.cpp \
+	kstring.cpp \
 	mm.cpp \
 	mmu.cpp \
 	partition.cpp \

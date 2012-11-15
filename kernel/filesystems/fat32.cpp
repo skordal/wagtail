@@ -16,6 +16,7 @@ const char fat32::reserved_characters[16] =
 
 fat32::fat32(partition * part) : filesystem(part)
 {
+	char label_buffer[12] = {0};
 	char * buffer = new char[part->get_block_size()];
 	part->read_block(buffer, part->get_start_address());
 
@@ -81,8 +82,8 @@ fat32::fat32(partition * part) : filesystem(part)
 
 	// Get the volume label:
 	for(int i = 0; i < 11; ++i)
-		volume_label[i] = buffer[71 + i];
-	volume_label[11] = 0;
+		label_buffer[i] = buffer[71 + i];
+	volume_label = label_buffer;
 	kernel::message() << part->get_name() << ": volume label: " << volume_label << kstream::newline;
 
 	// Set the sector address of the first data sector:
@@ -123,11 +124,14 @@ unsigned long long fat32::get_free_space() const
 	return retval;
 }
 
-direntry * fat32::read_directory(const char * path)
+direntry * fat32::read_directory(const kstring & path)
 {
 	if(path[0] != '/')
-		kernel::message() << get_partition()->get_name() << ": path name does not start with '/':"
+	{
+		kernel::message() << get_partition()->get_name() << ": path name should start with '/': "
 			<< path << kstream::newline;
+		return nullptr;
+	}
 
 	// TODO: This function only reads the root directory for now
 	return read_directory(2);

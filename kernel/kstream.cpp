@@ -17,6 +17,13 @@ kostream & kostream::operator << (const char * string)
 	return *this;
 }
 
+// Puts a kstring into a stream:
+kostream & kostream::operator << (const kstring & string)
+{
+	*this << string.get_buffer();
+	return *this;
+}
+
 // Puts a hexadecimal address into a stream:
 kostream & kostream::operator << (void * pointer)
 {
