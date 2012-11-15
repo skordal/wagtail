@@ -371,7 +371,7 @@ bool sd::send_acmd6()
 	if(!send_cmd55())
 		return false;
 
-#ifndef WAGTAIL_SD_DEBUG
+#ifdef WAGTAIL_SD_DEBUG
 	kernel::message() << get_name() << ": ACMD6" << kstream::newline;
 #endif
 
