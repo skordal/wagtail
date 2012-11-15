@@ -20,7 +20,9 @@ bool sd::read_block(void * buffer, block_address_t address)
 	// Wait for the data line to be ready:
 	while(io::read<int>(virtual_base, registers::pstate::offset) & registers::pstate::dati);
 
-	kernel::message() << "\tCMD17: ";
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": CMD17" << kstream::newline;
+#endif
 
 	io::write(0xffffff, virtual_base, registers::stat::offset);
 	io::write(registers::ie::cc|registers::ie::tc|registers::ie::cto|registers::ie::brr|
@@ -40,15 +42,19 @@ bool sd::read_block(void * buffer, block_address_t address)
 	}
 
 	// Read the data:
-	kernel::message() << "receiving data... ";
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": CMD17: receiving data... ";
+#endif
 	while(!(io::read<int>(virtual_base, registers::stat::offset) & registers::stat::brr));
 	for(int i = 0; i < 128; ++i)
 		((int *) buffer)[i] = io::read<int>(virtual_base, registers::data::offset);
 	io::or_register(registers::stat::brr, virtual_base, registers::stat::offset);
 
-	// Assume the transmission will complete and just wait:
+	// FIXME: We assume the transaction will complete and just wait for the TC flag to be set.
 	while(!(io::read<int>(virtual_base, registers::stat::offset) & registers::stat::tc));
+#ifdef WAGTAIL_SD_DEBUG
 	kernel::message() << "ok" << kstream::newline;
+#endif
 	return true;
 }
 
@@ -64,26 +70,18 @@ sd::sd() : block_device(512, "sd0"), virtual_base(mmu::map_device(sd::BASE_ADDRE
 {
 	kernel::message() << "Initializing SD module:" << kstream::newline;
 
-	kernel::message() << "\tEnabling clocks: ";
 	clock_mgr::enable(functional_clocks::mmc1);
 	clock_mgr::enable(interface_clocks::mmc1);
-	kernel::message() << "ok" << kstream::newline;
 
-	kernel::message() << "\tResetting: ";
 	io::write(registers::sysconfig::softreset, virtual_base, registers::sysconfig::offset);
 	while(!(io::read<int>(virtual_base, registers::sysstatus::offset) & registers::sysstatus::resetdone));
 
 	io::or_register(registers::sysctl::sra, virtual_base, registers::sysctl::offset);
 	while(!(io::read<int>(virtual_base, registers::sysctl::offset) & registers::sysctl::sra));
-	kernel::message() << "ok" << kstream::newline;
 
-	kernel::message() << "\tSetting capability registers: ";
 	io::or_register(registers::capa::vs30|registers::capa::vs18, virtual_base, registers::capa::offset);
 	io::write(220 << registers::cur_capa::cur_1v8|220 << registers::cur_capa::cur_3v0, virtual_base,
 		registers::cur_capa::offset);
-	kernel::message() << "ok" << kstream::newline;
-
-	kernel::message() << "\tInitializing SD bus: ";
 
 	// Enable power on the SD bus:
 	io::write(0x6 << registers::hctl::sdvs, virtual_base, registers::hctl::offset);
@@ -100,10 +98,11 @@ sd::sd() : block_device(512, "sd0"), virtual_base(mmu::map_device(sd::BASE_ADDRE
 	while(!(io::read<int>(virtual_base, registers::sysctl::offset) & registers::sysctl::ics));
 	io::or_register(registers::sysctl::cen, virtual_base, registers::sysctl::offset);
 
-	kernel::message() << "ok" << kstream::newline;
-
 	// Set the block length register:
 	io::write<int>(0x200, virtual_base, registers::blk::offset);
+
+	// All done, card initialization is next :-)
+	kernel::message() << "ok" << kstream::newline;
 
 	// TODO: handle checking for card present and ejecting and inserting cards.
 	initialize_card();
@@ -111,20 +110,21 @@ sd::sd() : block_device(512, "sd0"), virtual_base(mmu::map_device(sd::BASE_ADDRE
 
 void sd::initialize_card()
 {
-	kernel::message() << "Initializing SD card: " << kstream::newline;
+	kernel::message() << "Initializing SD card..." << kstream::newline;
 
-	kernel::message() << "\tSending initialization stream: ";
+	// Send the initialization stream:
+	switch_clock_divider(0x3ff); // Gives a frequency of 93.841 KHz, the lowest attainable.
 	io::write(registers::ie::cc, virtual_base, registers::ie::offset);
 	io::write(0xffffffff, virtual_base, registers::stat::offset);
 	io::or_register(registers::con::init, virtual_base, registers::con::offset);
-	for(int i = 0; i < 3; ++i)
+	for(int i = 0; i < 3; ++i) // Continue sending the initialization stream for a while
+	                           // due to the too high clock frequency.
 	{
 		io::write(0, virtual_base, registers::cmd::offset);
 		while(!(io::read<int>(virtual_base, registers::stat::offset) & registers::stat::cc));
 		io::write(0xffffffff, virtual_base, registers::stat::offset);
 	}
 	io::and_register(~registers::con::init, virtual_base, registers::con::offset);
-	kernel::message() << "ok" << kstream::newline;
 
 	// Switch the clock frequency to 400 KHz:
 	switch_clock_divider(240);
@@ -158,13 +158,9 @@ void sd::initialize_card()
 
 	card_initialized = true;
 
-	// Change to 4-bit mode:
+	// Change to 4-bit mode if ACMD6 is successful:
 	if(send_acmd6())
-	{
-		kernel::message() << "\tSwitching to 4-bit mode: ";
 		io::or_register(registers::hctl::dtw, virtual_base, registers::hctl::offset);
-		kernel::message() << "ok" << kstream::newline;
-	}
 
 	read_partition_table();
 }
@@ -182,7 +178,7 @@ void sd::read_partition_table()
 
 		// Due to the start and end addresses being split between two
 		// words in memory, the following is neccessary to assemble the
-		// addresses:
+		// addresses byte for byte:
 		start_address =
 			(*((unsigned int *)(buffer + 446 + 8 + (i * 16) - 2)) >> 16) |
 			(*((unsigned int *)(buffer + 446 + 8 + (i * 16) + 2)) << 16);
@@ -211,7 +207,9 @@ void sd::switch_clock_divider(short divider)
 
 void sd::send_cmd0()
 {
-	kernel::message() << "\tCMD0: ";
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": CMD0" << kstream::newline;
+#endif
 
 	io::write(0xffffffff, virtual_base, registers::stat::offset);
 	io::write(registers::ie::cc, virtual_base, registers::ie::offset);
@@ -220,12 +218,13 @@ void sd::send_cmd0()
 	io::write(0, virtual_base, registers::cmd::offset);
 
 	while(!(io::read<int>(virtual_base, registers::stat::offset) & registers::stat::cc));
-	kernel::message() << "ok" << kstream::newline;
 }
 
 bool sd::send_cmd2()
 {
-	kernel::message() << "\tCMD2: ";
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": CMD2" << kstream::newline;
+#endif
 
 	io::write(0xffffffff, virtual_base, registers::stat::offset);
 	io::write(registers::ie::cc|registers::ie::cto|registers::ie::cerr,
@@ -238,26 +237,29 @@ bool sd::send_cmd2()
 	sd_status status = wait_for_status();
 	if(status != sd_status::command_complete)
 	{
-		kernel::message() << get_error_message(status) << kstream::newline;
+		kernel::message() << get_name() << ": CMD2: " << get_error_message(status)
+			<< kstream::newline;
 		return false;
 	}
 
-	kernel::message() << "ok" << kstream::newline;
-
+#ifdef WAGTAIL_SD_DEBUG
 	// Just print the CID, as it's not used for anything yet.
-	kernel::message() << "\t -> CID is "
+	kernel::message() << get_name() << ": CMD2: card CID register is "
 		<< io::read<void *>(virtual_base, registers::rsp76::offset) << " "
 		<< io::read<void *>(virtual_base, registers::rsp54::offset) << " "
 		<< io::read<void *>(virtual_base, registers::rsp32::offset) << " "
 		<< io::read<void *>(virtual_base, registers::rsp10::offset) << " "
 		<< kstream::newline;
+#endif
 
 	return true;
 }
 
 bool sd::send_cmd3()
 {
-	kernel::message() << "\tCMD3: ";
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": CMD3" << kstream::newline;
+#endif
 
 	io::write(0xffffffff, virtual_base, registers::stat::offset);
 	io::write(registers::ie::cc|registers::ie::cto, virtual_base, registers::ie::offset);
@@ -273,15 +275,19 @@ bool sd::send_cmd3()
 	}
 
 	rca = io::read<int>(virtual_base, registers::rsp10::offset) >> 16;
-	kernel::message() << "ok" << kstream::newline;
-	kernel::message() << "\t -> card RCA is " << (int) rca << kstream::newline;
+
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": CMD3: card RCA is " << (int) rca << kstream::newline;
+#endif
 
 	return true;
 }
 
 bool sd::send_cmd7()
 {
-	kernel::message() << "\tCMD7: ";
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": CMD7" << kstream::newline;
+#endif
 
 	io::write(0xffffffff, virtual_base, registers::stat::offset);
 	io::write(registers::ie::cc|registers::ie::cto, virtual_base, registers::ie::offset);
@@ -292,17 +298,19 @@ bool sd::send_cmd7()
 	sd_status status = wait_for_status();
 	if(status != sd_status::command_complete)
 	{
-		kernel::message() << get_error_message(status) << kstream::newline;
+		kernel::message() << get_name() << ": CMD7: " << get_error_message(status)
+			<< kstream::newline;
 		return false;
 	}
 
-	kernel::message() << "ok" << kstream::newline;
 	return true;
 }
 
 bool sd::send_cmd8()
 {
-	kernel::message() << "\tCMD8: ";
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": CMD8" << kstream::newline;
+#endif
 
 	io::write(0xffffffff, virtual_base, registers::stat::offset);
 	io::write(registers::ie::cc|registers::ie::cto, virtual_base, registers::ie::offset);
@@ -321,21 +329,24 @@ bool sd::send_cmd8()
 	int reply = io::read<int>(virtual_base, registers::rsp10::offset);
 	if((reply & 0xaa) != 0xaa)
 	{
-		kernel::message() << "check pattern mismatch" << kstream::newline;
+		kernel::message() << get_name() << ": CMD8: check pattern mismatch"
+			<< kstream::newline;
 		return false;
 	} else if(!(reply & (1 << 8)))
 	{
-		kernel::message() << "operating condition not accepted" << kstream::newline;
+		kernel::message() << get_name() << ": CMD8: operating condition not accepted"
+			<< kstream::newline;
 		return false;
 	}
 
-	kernel::message() << "ok" << kstream::newline;
 	return true;
 }
 
 bool sd::send_cmd55()
 {
-	kernel::message() << "\t(CMD55: ";
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": CMD55" << kstream::newline;
+#endif
 
 	io::write(0xffffffff, virtual_base, registers::stat::offset);
 	io::write(registers::ie::cc|registers::ie::cto, virtual_base, registers::ie::offset);
@@ -347,10 +358,10 @@ bool sd::send_cmd55()
 	sd_status status = wait_for_status();
 	if(status != sd_status::command_complete)
 	{
-		kernel::message() << get_error_message(status) << ")" << kstream::newline;
+		kernel::message() << get_name() << ": CMD55: " << get_error_message(status)
+			<< kstream::newline;
 		return false;
 	} else {
-		kernel::message() << "ok)" << kstream::newline;
 		return true;
 	}
 }
@@ -360,7 +371,9 @@ bool sd::send_acmd6()
 	if(!send_cmd55())
 		return false;
 
-	kernel::message() << "\tACMD6: ";
+#ifndef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": ACMD6" << kstream::newline;
+#endif
 
 	io::write(0xffffffff, virtual_base, registers::stat::offset);
 	io::write(registers::ie::cc|registers::ie::cto, virtual_base, registers::ie::offset);
@@ -376,7 +389,6 @@ bool sd::send_acmd6()
 		return false;
 	}
 
-	kernel::message() << "ok" << kstream::newline;
 	return true;
 }
 
@@ -386,7 +398,9 @@ int sd::send_acmd41()
 	if(!send_cmd55())
 		return -1;
 
-	kernel::message() << "\tACMD41: ";
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": ACMD41" << kstream::newline;
+#endif
 
 	io::write(0xffffffff, virtual_base, registers::stat::offset);
 	io::write(registers::ie::cc|registers::ie::cto, virtual_base, registers::ie::offset);
@@ -402,7 +416,6 @@ int sd::send_acmd41()
 		return -1;
 	}
 
-	kernel::message() << "ok" << kstream::newline;
 	return io::read<int>(virtual_base, registers::rsp10::offset);
 }
 

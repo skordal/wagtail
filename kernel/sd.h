@@ -12,6 +12,10 @@
 
 #include "hardware/sd.h"
 
+// Define to enable SD card debugging messages, which include printing the
+// commands being sent to the card:
+// #define WAGTAIL_SD_DEBUG
+
 namespace wagtail
 {
 	// SD card driver class.
