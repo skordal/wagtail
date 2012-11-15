@@ -126,9 +126,8 @@ void sd::initialize_card()
 	io::and_register(~registers::con::init, virtual_base, registers::con::offset);
 	kernel::message() << "ok" << kstream::newline;
 
-	// FIXME: At this point the bus clock frequency is ~94 KHz, it should be 400 KHz.
-	// FIXME: Switching to 400 KHz (or anything else, for that matter), seems to cause
-	// FIXME: problems when issuing CMD2 and onwards.
+	// Switch the clock frequency to 400 KHz:
+	switch_clock_divider(240);
 
 	// Send CMD0:
 	send_cmd0();
@@ -158,6 +157,15 @@ void sd::initialize_card()
 		return;
 
 	card_initialized = true;
+
+	// Change to 4-bit mode:
+	if(send_acmd6())
+	{
+		kernel::message() << "\tSwitching to 4-bit mode: ";
+		io::or_register(registers::hctl::dtw, virtual_base, registers::hctl::offset);
+		kernel::message() << "ok" << kstream::newline;
+	}
+
 	read_partition_table();
 }
 
@@ -188,6 +196,17 @@ void sd::read_partition_table()
 	}
 
 	delete[] buffer;
+}
+
+void sd::switch_clock_divider(short divider)
+{
+	int sysctl_register = io::read<int>(virtual_base, registers::sysctl::offset);
+	sysctl_register &= ~(0x3ff << registers::sysctl::clkd|registers::sysctl::cen);
+	sysctl_register |= 240 << registers::sysctl::clkd;
+
+	io::write(sysctl_register, virtual_base, registers::sysctl::offset);
+	while(!(io::read<int>(virtual_base, registers::sysctl::offset) & registers::sysctl::ics));
+	io::or_register(registers::sysctl::cen, virtual_base, registers::sysctl::offset);
 }
 
 void sd::send_cmd0()
@@ -334,6 +353,31 @@ bool sd::send_cmd55()
 		kernel::message() << "ok)" << kstream::newline;
 		return true;
 	}
+}
+
+bool sd::send_acmd6()
+{
+	if(!send_cmd55())
+		return false;
+
+	kernel::message() << "\tACMD6: ";
+
+	io::write(0xffffffff, virtual_base, registers::stat::offset);
+	io::write(registers::ie::cc|registers::ie::cto, virtual_base, registers::ie::offset);
+
+	io::write(0x00000002, virtual_base, registers::arg::offset);
+	io::write(6 << registers::cmd::indx|0x2 << registers::cmd::rsp_type,
+		virtual_base, registers::cmd::offset);
+
+	sd_status status = wait_for_status();
+	if(status != sd_status::command_complete)
+	{
+		kernel::message() << get_error_message(status) << kstream::newline;
+		return false;
+	}
+
+	kernel::message() << "ok" << kstream::newline;
+	return true;
 }
 
 // Returns the reply data, or -1 if an error occurs:

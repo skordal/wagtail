@@ -40,6 +40,9 @@ namespace wagtail
 			// Reads the partition table of an initialized card:
 			void read_partition_table();
 
+			// Switches the SD bus frequency clock divider:
+			void switch_clock_divider(short divider);
+
 			// Various functions for sending commands to the card:
 			void send_cmd0();	// GO_IDLE_STATE
 			bool send_cmd2();	// ALL_SEND_CID
@@ -47,6 +50,7 @@ namespace wagtail
 			bool send_cmd7();	// SELECT/DESELECT_CARD
 			bool send_cmd8();	// SEND_IF_COND
 			bool send_cmd55();	// APP_CMD
+			bool send_acmd6();	// SET_BUS_WIDTH
 			int send_acmd41();	// SD_SEND_OP_COND
 
 			enum class sd_status

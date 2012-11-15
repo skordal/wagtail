@@ -10,5 +10,5 @@ The goal of Wagtail is to be a simple operating system for the BeagleBoard, expl
 
 Another goal of Wagtail is to exploit various C++ features in a way that benefits operating system development.
 
-Wagtail currently has working (though perhaps a bit simple and inefficient) memory management, can (although slowly) read from SD cards, and can list directory contents on FAT32 partitions on the aforementioned SD card.
+Wagtail currently has working (though perhaps a bit simple and inefficient) memory management, can read from SD cards, and can list directory contents on FAT32 partitions on the aforementioned SD card.
 
