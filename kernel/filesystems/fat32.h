@@ -24,10 +24,10 @@ namespace wagtail
 				unsigned long long get_free_space() const override;
 
 				// Gets the volume ID:
-				const char * get_label() const override { return volume_label; }
+				const kstring & get_label() const override { return volume_label; }
 
 				// Reads the specified directory:
-				direntry * read_directory(const char * path) override;
+				direntry * read_directory(const kstring & path) override;
 			private:
 				static const unsigned char ATTR_READ_ONLY =	0x01;
 				static const unsigned char ATTR_HIDDEN =	0x02;
@@ -63,7 +63,7 @@ namespace wagtail
 				block_device::block_address_t fsinfo_sector;
 
 				unsigned int volume_id;
-				char volume_label[12];
+				kstring volume_label;
 
 				static const char reserved_characters[16];
 		};
