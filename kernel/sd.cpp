@@ -68,7 +68,7 @@ bool sd::write_block(const void * buffer, block_address_t address)
 
 sd::sd() : block_device(512, "sd0"), virtual_base(mmu::map_device(sd::BASE_ADDRESS, 4096))
 {
-	kernel::message() << "Initializing SD module:" << kstream::newline;
+	kernel::message() << "Initializing SD module..." << kstream::newline;
 
 	clock_mgr::enable(functional_clocks::mmc1);
 	clock_mgr::enable(interface_clocks::mmc1);
@@ -100,9 +100,6 @@ sd::sd() : block_device(512, "sd0"), virtual_base(mmu::map_device(sd::BASE_ADDRE
 
 	// Set the block length register:
 	io::write<int>(0x200, virtual_base, registers::blk::offset);
-
-	// All done, card initialization is next :-)
-	kernel::message() << "ok" << kstream::newline;
 
 	// TODO: handle checking for card present and ejecting and inserting cards.
 	initialize_card();
