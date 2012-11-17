@@ -16,9 +16,9 @@ How to build Wagtail
 --------------------
 
 To build Wagtail, you need the following:
-	* An arm-none-eabi toolchain
-	* `mkimage` from the uboot project
-	* `dtc`, also to create the boot image
+* An arm-none-eabi toolchain
+* `mkimage` from the uboot project
+* `dtc`, also to create the boot image
 
 When you have the pre-requisites, simply run `make`.
 
