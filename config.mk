@@ -19,8 +19,6 @@ CXXFLAGS  += -O2 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon \
 	-mno-thumb-interwork -fno-builtin -fno-rtti -fno-exceptions \
 	-falign-functions=4 -std=gnu++0x -fno-use-cxa-atexit
 LDFLAGS += -nostdlib
-MKIMAGE_FLAGS  = -A arm -O linux -T kernel -C none -a 0x80008000 \
-	-e 0x80008000 -n WagtailOS
 
 # Build flags for Wagtail applications:
 APP_CXXFLAGS += $(CXXFLAGS)

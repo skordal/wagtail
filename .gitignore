@@ -1,10 +1,9 @@
 # Ignore object files and executables:
 *.o
+system.map
 wagtail.elf
 wagtail.bin
-uImage
-
-system.map
+wagtail.itb
 
 # Ignore vim swap files:
 .*.swp

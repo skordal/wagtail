@@ -1,0 +1,33 @@
+/* Wagtail OS
+   (c) Kristian Klomsten Skordal 2012 <kristian.skordal@gmail.com>
+   Report bugs and issues on <http://github.com/skordal/wagtail>
+*/
+
+/dts-v1/;
+
+/ {
+	description = "Wagtail OS";
+	
+	images {
+		kernel@1 {
+			description = "Wagtail OS Kernel";
+			data = /incbin/("./wagtail.bin");
+			type = "kernel";
+			arch = "arm";
+			os = "linux";
+			compression = "none";
+			load = <0x80008000>;
+			entry = <0x80008000>;
+		};
+	};
+
+	configurations {
+		default = "config@1";
+		config@1 {
+			description = "Boot Wagtail OS";
+			kernel = "kernel@1";
+		};
+	};
+};
+
+

@@ -42,11 +42,11 @@ OBJECT_FILES = $(ASSEMBLER_FILES:.S=.o) \
 all: $(OBJECT_FILES)
 	$(LD) $(LDFLAGS) -T wagtail.ld -o wagtail.elf -Map system.map $(OBJECT_FILES)
 	$(OBJCOPY) -S -x -O binary -j .text -j .data wagtail.elf wagtail.bin
-	$(MKIMAGE) $(MKIMAGE_FLAGS) -d wagtail.bin uImage # > /dev/null
+	$(MKIMAGE) -f wagtail.its wagtail.itb
 
 clean:
 	-$(RM) $(OBJECT_FILES)
-	-$(RM) wagtail.elf wagtail.bin uImage system.map
+	-$(RM) wagtail.elf wagtail.bin wagtail.itb system.map
 
 %.o: %.S
 	$(CXX) -c $(CXXFLAGS) $< -o $@
