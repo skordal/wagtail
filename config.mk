@@ -10,6 +10,7 @@ OBJCOPY      = $(TOOL_PREFIX)objcopy
 
 # Build utilities:
 GREP    ?= grep
+GZIP    ?= gzip
 MKIMAGE ?= mkimage
 RM      ?= rm
 

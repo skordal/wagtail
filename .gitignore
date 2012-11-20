@@ -2,8 +2,9 @@
 *.o
 system.map
 wagtail.elf
-wagtail.bin
 wagtail.itb
+wagtail.bin
+wagtail.bin.gz
 
 # Ignore vim swap files:
 .*.swp
