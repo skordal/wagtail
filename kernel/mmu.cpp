@@ -23,38 +23,6 @@ extern "C" void mmu_init()
 	mmu::initialize();
 }
 
-// Maps an interval of physical memory to an interval starting at the virtual address specified:
-template<int entries>
-void mmu::translation_table<entries>::map_interval(void * start, void * end, void * virt,
-	mmu::permissions_t permissions, mmu::interval_type_t type)
-{
-	unsigned int current_address = reinterpret_cast<unsigned int>(start);
-	unsigned int current_virtual = reinterpret_cast<unsigned int>(virt);
-
-	for(; current_address < reinterpret_cast<unsigned int>(end); current_address += 4096, current_virtual += 4096)
-		map_page(reinterpret_cast<void *>(current_address), reinterpret_cast<void *>(current_virtual),
-			permissions, type);
-}
-
-// Maps a physical page to a virtual address:
-template<int entries>
-void mmu::translation_table<entries>::map_page(void * page, void * virt, mmu::permissions_t permissions,
-	mmu::interval_type_t type)
-{
-	page_table * pt;
-	unsigned int table_index = reinterpret_cast<unsigned int>(virt) >> 20;
-
-	if(table[table_index] & l1::type_page_table)
-		pt = reinterpret_cast<page_table *>(table[table_index] & 0xfffffc00);
-	else  { // If no page table exists, allocate a new one and make a page table entry:
-		pt = new (1024) page_table;
-		table[table_index] = reinterpret_cast<unsigned int>(pt) | mmu::l1::type_page_table;
-	}
-
-	unsigned int pt_index = (reinterpret_cast<unsigned int>(virt) & 0x000fffff) >> 12;
-	pt->add_entry(pt_index, page, permissions, type);
-}
-
 // Creates the initial page tables and initializes the MMU:
 void mmu::initialize()
 {
@@ -199,5 +167,14 @@ void mmu::page_table::add_entry(int offset, void * physical, permissions_t permi
 void mmu::page_table::remove_entry(int offset)
 {
 	table[offset] = 0;
+}
+
+// Checks if a page table is empty:
+bool mmu::page_table::is_empty() const
+{
+	for(int i = 0; i < 256; ++i)
+		if(table[i] != 0)
+			return false;
+	return true;
 }
 

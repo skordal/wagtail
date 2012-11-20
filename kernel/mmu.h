@@ -47,15 +47,65 @@ namespace wagtail
 
 					// Maps an interval in the page table:
 					void map_interval(void * start, void * end, void * virtual_address,
-						permissions_t permissions, interval_type_t type);
-					// Unmaps an interval of physical memory:
-					void unmap_interval(void * start, void * end);
+						permissions_t permissions, interval_type_t type)
+					{
+						unsigned int current_address = (unsigned int) start;
+						unsigned int current_virtual = (unsigned int) virtual_address;
+
+						for(; current_address < (unsigned int) end;
+							current_address += 4096, current_virtual += 4096)
+						{
+							map_page(reinterpret_cast<void *>(current_address),
+								reinterpret_cast<void *>(current_virtual),
+								permissions, type);
+						}
+					}
+
+					// Unmaps an interval of virtual memory:
+					void unmap_interval(void * start, void * end)
+					{
+						unsigned int current_address = reinterpret_cast<unsigned int>(start);
+
+						for(; current_address < (unsigned int) end; current_address += 4096)
+						{
+							unmap_page((void *) current_address);
+						}
+					}
 
 					// Maps a page:
 					void map_page(void * page, void * virt, permissions_t permissions,
-						interval_type_t type);
-					// Unmaps a page:
-					void unmap_page(void * page);
+						interval_type_t type)
+					{
+						page_table * pt;
+						unsigned int table_index = (unsigned int)virt >> 20;
+
+						if(table[table_index] & l1::type_page_table)
+							pt = reinterpret_cast<page_table *>(table[table_index] & 0xfffffc00);
+						else  { // If no page table exists, allocate a new one and make a page table entry:
+							pt = new (1024) page_table;
+							table[table_index] = (unsigned int)pt | mmu::l1::type_page_table;
+						}
+
+						unsigned int pt_index = ((unsigned int) virt & 0x000fffff) >> 12;
+						pt->add_entry(pt_index, page, permissions, type);
+					}
+
+					// Unmaps a page from the specified virtual address:
+					void unmap_page(void * page)
+					{
+						unsigned int address = reinterpret_cast<unsigned int>(page);
+						if(!(table[address >> 20] & l1::type_page_table))
+							return;
+
+						page_table * pt = reinterpret_cast<page_table *>(table[address >> 20] & 0xfffffc00);
+						pt->remove_entry((address & 0x000fffff) >> 12);
+
+						if(pt->is_empty())
+						{
+							table[address >> 20] = 0;
+							delete pt;
+						}
+					}
 				private:
 					unsigned int table[entries] __attribute((aligned(4*entries)));
 			};
@@ -126,9 +176,13 @@ namespace wagtail
 						interval_type_t type);
 					// Removes an entry from the page table:
 					void remove_entry(int offset);
+
+					// Checks if a page table is empty:
+					bool is_empty() const;
 				private:
 					unsigned int table[256];
 			};
+			static_assert(sizeof(page_table) == 1024, "mmu::page_table must be 1024 bytes long!");
 
 			// Address that the next mapped device is mapped to:
 			static void * next_device_addr;
