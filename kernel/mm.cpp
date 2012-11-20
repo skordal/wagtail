@@ -74,7 +74,7 @@ void mm::initialize()
 	initialization_completed = true;
 
 	// Create a stack of available pages for the page allocator:
-	
+
 	// Figure out how many pages are available currently:
 	unsigned int num_pages = (ramsize / 4096) -
 		(((unsigned int) kernel_dataspace_end - (unsigned int) &ramstart) / 4096);
@@ -165,8 +165,7 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 				void * new_page = allocate_page();
 				void * new_block_addr = kernel_dataspace_end;
 				mmu::get_kernel_table().map_page(new_page, kernel_dataspace_end, mmu::RW_NA, mmu::DATA);
-				kernel_dataspace_end = reinterpret_cast<void *>(
-					reinterpret_cast<unsigned int>(kernel_dataspace_end) + 4096);
+				kernel_dataspace_end = (void *)(reinterpret_cast<unsigned int>(kernel_dataspace_end) + 4096);
 
 				if(current_block->is_used())
 				{
@@ -227,7 +226,7 @@ void mm::free_page(void * page)
 mm::block::block(block * prev, block * next, unsigned int size, bool used)
 	: prev(prev), next(next), size(size), used(used)
 {
-	
+
 }
 
 // Splits a block of memory, or returns null if this is not possible. Returns the
@@ -305,6 +304,11 @@ void * operator new(unsigned int size)
 void * operator new[](unsigned int size)
 {
 	return mm::allocate(size);
+}
+
+void * operator new[](unsigned int size, unsigned int alignment)
+{
+	return mm::allocate(size, alignment);
 }
 
 // Operator for freeing memory:

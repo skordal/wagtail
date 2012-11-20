@@ -106,8 +106,11 @@ namespace wagtail
 void * operator new(unsigned int size, unsigned int alignment);
 // Operator for allocating memory with default alignment:
 void * operator new(unsigned int size);
+
 // Operator for allocating arrays:
 void * operator new[](unsigned int size);
+// Operator for allocating aligned arrays:
+void * operator new[](unsigned int size, unsigned int alignment);
 
 // Operator for freeing allocated memory blocks:
 void operator delete(void * data);
