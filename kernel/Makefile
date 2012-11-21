@@ -47,7 +47,7 @@ all: $(OBJECT_FILES)
 
 clean:
 	-$(RM) $(OBJECT_FILES)
-	-$(RM) wagtail.elf wagtail.bin wagtail.itb system.map
+	-$(RM) wagtail.elf wagtail.bin wagtail.bin.gz wagtail.itb system.map
 
 %.o: %.S
 	$(CXX) -c $(CXXFLAGS) $< -o $@
