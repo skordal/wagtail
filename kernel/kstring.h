@@ -11,11 +11,15 @@ namespace wagtail
 {
 	// A simple string class for simplifying working with strings. Loosely based on
 	// std::string.
+	// TODO: Add UTF-8 support.
 	class kstring
 	{
 		public:
+			static const int npos = -1;
+
 			kstring(const char * string);
 			kstring(const kstring & string);
+			kstring(const kstring & string, int start_offset, unsigned int length);
 			kstring();
 
 			~kstring();
@@ -31,9 +35,26 @@ namespace wagtail
 			void prepend(const char * string);
 			void prepend(const kstring & string);
 
+			// Converts the entire string to lowercase:
+			void tolower();
+			// Converts the entire string to uppercase:
+			void toupper();
+
+			// Returns the index of the specified character in the string or kstring::npos
+			// if it was not found:
+			int index(char c) const;
+
+			// Assignment operators:
+			kstring & operator=(const char * string);
+			kstring & operator=(const kstring & string);
+
 			// String concatenation operators:
 			kstring & operator+=(const char * string);
 			kstring & operator+=(const kstring & string);
+			kstring & operator+=(char c);
+
+			// Comparison operators:
+			bool operator==(const kstring & string) const;
 
 			// Index operator:
 			char & operator[](int n) { return buffer[n]; }
