@@ -55,6 +55,7 @@ namespace wagtail
 
 			// Comparison operators:
 			bool operator==(const kstring & string) const;
+			bool operator!=(const kstring & string) const { return !(*this == string); }
 
 			// Index operator:
 			char & operator[](int n) { return buffer[n]; }
