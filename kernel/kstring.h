@@ -19,7 +19,7 @@ namespace wagtail
 
 			kstring(const char * string);
 			kstring(const kstring & string);
-			kstring(const kstring & string, int start_offset, unsigned int length);
+			kstring(const kstring & string, int start_offset, int end_offset);
 			kstring();
 
 			~kstring();
@@ -40,9 +40,16 @@ namespace wagtail
 			// Converts the entire string to uppercase:
 			void toupper();
 
+			// Gets the directory component of a pathname:
+			kstring dirname() const;
+			// Gets the file component of a pathname:
+			kstring filename() const;
+
 			// Returns the index of the specified character in the string or kstring::npos
 			// if it was not found:
 			int index(char c) const;
+			// Does the same as index, but starts at the end of the string:
+			int rindex(char c) const;
 
 			// Assignment operators:
 			kstring & operator=(const char * string);

@@ -16,14 +16,16 @@ kstring::kstring(const kstring & string)
 	buffer = utils::strdup(string.buffer);
 }
 
-kstring::kstring(const kstring & string, int start_offset, unsigned int length)
+kstring::kstring(const kstring & string, int start_offset, int end_offset)
 {
-	if(start_offset + length > string.get_length())
+	int length = end_offset - start_offset;
+
+	if(start_offset + end_offset > (int) string.get_length())
 		length = string.get_length() - start_offset;
 
 	buffer = new char[length + 1];
-	for(unsigned int i = 0; i < length; ++i)
-		buffer[i] = string.buffer[start_offset + i];
+	for(int i = 0; i < length; ++i)
+		buffer[i] = string[start_offset + i];
 	buffer[length] = 0;
 }
 
@@ -95,9 +97,36 @@ void kstring::toupper()
 	}
 }
 
+kstring kstring::dirname() const
+{
+	int last_slash = rindex('/');
+	if(last_slash == kstring::npos)
+		return "";
+	else
+		return kstring(*this, 0, last_slash);
+}
+
+kstring kstring::filename() const
+{
+	int last_slash = rindex('/');
+	if(last_slash == kstring::npos)
+		return "";
+	else
+		return kstring(buffer + last_slash + 1);
+}
+
 int kstring::index(char c) const
 {
 	for(unsigned int i = 0; i < get_length(); ++i)
+		if(buffer[i] == c)
+			return i;
+
+	return kstring::npos;
+}
+
+int kstring::rindex(char c) const
+{
+	for(unsigned int i = get_length(); i >= 0; --i)
 		if(buffer[i] == c)
 			return i;
 
