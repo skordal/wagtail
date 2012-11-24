@@ -8,17 +8,12 @@
 using namespace wagtail;
 using namespace wagtail::filesystems;
 
-// These characters cannot be included in filenames:
-const char fat32::reserved_characters[16] =
-	{
-		0x22, 0x2a, 0x2b, 0x2c, 0x2e, 0x2f, 0x3a, 0x3b,
-		0x3c, 0x3d, 0x3e, 0x3f, 0x5b, 0x5c, 0x5d, 0x7c
-	};
-
 fat32::fat32(partition * part) : filesystem(part)
 {
 	char label_buffer[12] = {0};
 	char * buffer = new char[part->get_block_size()];
+
+	// Read the volume header sector:
 	part->read_block(buffer, part->get_start_address());
 
 	// Check for 0xeb or 0xe9 in the first byte:
@@ -166,13 +161,12 @@ direntry * fat32::read_directory(const kstring & path)
 	{
 		unsigned long directory_cluster;
 		int slash_index = mutable_path.index('/');
-		kstring dirname = kstring(mutable_path, 0, slash_index);
 
 		// If we are at the last path component, check if the desired directory
 		// is available; if it is, read it and return the result:
 		if(slash_index == kstring::npos)
 		{
-			direntry * temp = direntry::find_entry(dirname, current);
+			direntry * temp = direntry::find_entry(mutable_path, current);
 			if(temp != nullptr)
 			{
 				retval = read_directory(temp->get_inode());
@@ -181,6 +175,8 @@ direntry * fat32::read_directory(const kstring & path)
 
 			break;
 		}
+
+		kstring dirname = kstring(mutable_path, 0, slash_index);
 
 		// Find the next entry in the path:
 		direntry * next_entry = direntry::find_entry(dirname, current);

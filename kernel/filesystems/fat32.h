@@ -79,8 +79,6 @@ namespace wagtail
 
 				unsigned int volume_id;
 				kstring volume_label;
-
-				static const char reserved_characters[16];
 		};
 	}
 }
