@@ -26,7 +26,8 @@ SOURCE_FILES := \
 	scm.cpp \
 	sd.cpp \
 	uart.cpp \
-	utils.cpp
+	utils.cpp \
+	vfs.cpp
 
 # Assembler source files to build:
 ASSEMBLER_FILES := \

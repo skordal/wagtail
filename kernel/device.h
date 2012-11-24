@@ -20,9 +20,16 @@ namespace wagtail
 
 			const char * get_name() const { return name; }
 			int get_number() const { return number; }
+
+			// Methods used in preventing multiple modules from taking control over
+			// the same device:
+			void reserve() { reserved = true; }
+			void release() { reserved = false; }
+			bool is_reserved() const { return reserved; }
 		private:
 			const char * name;
 			unsigned int number;
+			bool reserved = false;
 	};
 
 	// Base class for character devices:

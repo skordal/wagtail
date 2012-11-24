@@ -13,6 +13,7 @@
 #include "scm.h"
 #include "sd.h"
 #include "uart.h"
+#include "vfs.h"
 
 namespace wagtail
 {

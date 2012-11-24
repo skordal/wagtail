@@ -22,7 +22,10 @@ namespace wagtail
 			// partition. This method determines which filesystem driver
 			// to use and instantiates the correct type of object. If
 			// an error occurs, nullptr is returned.
-			static filesystem * initialize(partition * part);
+			static filesystem * initialize(partition * part, char type = partition::auto_type);
+
+			// Filesystem destructor:
+			virtual ~filesystem() { if(part != nullptr) part->release(); }
 
 			bool is_read_only() const { return read_only; }
 			void set_read_only(bool read_only = true) { this->read_only = read_only; }
@@ -41,12 +44,15 @@ namespace wagtail
 			// entry for the directory. If there are is no such directory, nullptr is
 			// returned.
 			virtual direntry * read_directory(const kstring & path) = 0;
-		protected:
-			filesystem(partition * part) : part(part) {}
-			virtual ~filesystem() {}
+
+			// Checks if the specified file/directory exists and returns its
+			// direntry if it is found:
+			virtual direntry * file_exists(const kstring & path);
 
 			// Gets the partition the filesystem is on:
 			partition * get_partition() const { return part; }
+		protected:
+			filesystem(partition * part) : part(part) { if(part != nullptr) part->reserve(); }
 
 			// Sets the usable flag:
 			void set_usable(bool usable = true) { this->usable = usable; }

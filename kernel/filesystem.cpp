@@ -11,12 +11,12 @@
 using namespace wagtail;
 using namespace wagtail::filesystems;
 
-filesystem * filesystem::initialize(partition * part)
+// Initializes a filesystem for the specified partition.
+filesystem * filesystem::initialize(partition * part, char type)
 {
 	filesystem * fs = nullptr;
-	kernel::message() << part->get_name() << ": filesystem type: " << (void *) (int) part->get_type() << kstream::newline;
 
-	switch(part->get_type())
+	switch(type != partition::auto_type ? type : part->get_type())
 	{
 		case 0xc:
 			kernel::message() << part->get_name() << ": trying FAT driver" << kstream::newline;
@@ -33,5 +33,25 @@ filesystem * filesystem::initialize(partition * part)
 		return nullptr;
 	} else
 		return fs;
+}
+
+// Checks if a specified file/directory exists in the filesystem:
+direntry * filesystem::file_exists(const kstring & path)
+{
+	direntry * dir = read_directory(path.dirname());
+	if(dir == nullptr)
+		return nullptr;
+
+	direntry * retval = direntry::find_entry(path.filename(), dir);
+	if(retval == nullptr)
+	{
+		direntry::free_list(dir);
+		return nullptr;
+	}
+
+	// Copy the found file:
+	retval = new direntry(*retval);
+	direntry::free_list(dir);
+	return retval;
 }
 

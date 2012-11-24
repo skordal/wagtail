@@ -16,6 +16,8 @@ namespace wagtail
 	class partition : public block_device
 	{
 		public:
+			static const char auto_type = -1;
+
 			partition(block_device * device, block_address_t start_addr,
 				block_address_t end_addr, char type, int num);
 			~partition() { delete[] name; }
@@ -30,6 +32,8 @@ namespace wagtail
 
 			block_address_t get_start_address() const { return start; }
 			block_address_t get_end_address() const { return end; }
+
+			// Gets the partition type:
 			char get_type() const { return type; }
 
 			unsigned long long get_size() const { return end - start; }
