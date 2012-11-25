@@ -11,21 +11,14 @@ device_mgr * device_mgr::devmgr = new device_mgr;
 
 unsigned int device_mgr::register_device(device * dev)
 {
-	unsigned int retval = next_devnum;
+	unsigned int retval = next_devnum++;
 
-	// FIXME: This code determines the next device number to assign, but it does
-	// FIXME: not take the maximum number of allocated devices into account.
-	if(devices[next_devnum + 1] == nullptr)
-		++next_devnum;
-	else {
-		for(int i = next_devnum + 1; i < PREALLOCATE_DEVICES; ++i)
-		{
-			if(devices[i] == nullptr)
-			{
-				next_devnum = i;
-				break;
-			}
-		}
+	if(get_device_by_name(dev->get_name()))
+	{
+		kernel::message() << "Cannot register device " << dev->get_name()
+			<< ": a device with the same name is already registered!"
+			<< kstream::newline;
+		return -1;
 	}
 
 	devices[retval] = dev;
@@ -35,21 +28,18 @@ unsigned int device_mgr::register_device(device * dev)
 void device_mgr::unregister_device(unsigned int number)
 {
 	devices[number] = nullptr;
-	if(number < next_devnum)
-		next_devnum = number;
 }
 
-device * device_mgr::get_device_by_name(const char * name) const
+device * device_mgr::get_device_by_name(const kstring & name)
 {
-	for(int i = 0; i < PREALLOCATE_DEVICES; ++i)
-		if(devices[i] != nullptr && utils::str_equals(devices[i]->get_name(), name))
+	for(int i = 0; i < devices.get_capacity(); ++i)
+		if(devices[i] != nullptr && devices[i]->get_name() == name)
 			return devices[i];
 	return nullptr;
 }
 
-device_mgr::device_mgr()
+device_mgr::device_mgr() : devices(PREALLOCATE_DEVICES)
 {
-	devices = new device*[PREALLOCATE_DEVICES];
 	for(int i = 0; i < PREALLOCATE_DEVICES; ++i)
 		devices[i] = nullptr;
 }
