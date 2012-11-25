@@ -20,7 +20,7 @@ namespace wagtail
 
 			partition(block_device * device, block_address_t start_addr,
 				block_address_t end_addr, char type, int num);
-			~partition() { delete[] name; }
+			~partition() {}
 
 			// Overrides for doing I/O on the underlying block device; these methods
 			// checks if the specified block address is within the bounds of the partition,
@@ -41,13 +41,12 @@ namespace wagtail
 			// Creates a partition device name from the basename of
 			// the parent block drive and the partition number, looking
 			// like, for example, for SD cards, sd0p[0,1,2,3].
-			static char * partname(const char * base, int partnum);
+			static kstring partname(const kstring & base, int partnum);
 
 			block_device * device;
 			block_device::block_address_t start, end;
 
 			char type;
-			char * name;
 	};
 }
 

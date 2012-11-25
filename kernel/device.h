@@ -15,10 +15,13 @@ namespace wagtail
 	{
 		public:
 			// Creates a device with the specified name:
-			device(const char * name) : name(name), number(device_mgr::get()->register_device(this)) {}
+			device(const kstring & name) : name(name), number(device_mgr::get()->register_device(this)) {}
 			virtual ~device() {}
 
-			const char * get_name() const { return name; }
+			const kstring & get_name() const { return name; }
+			void set_name(const kstring & name) { this->name = name; }
+
+			void set_number(int number) { this->number = number; }
 			int get_number() const { return number; }
 
 			// Methods used in preventing multiple modules from taking control over
@@ -27,7 +30,7 @@ namespace wagtail
 			void release() { reserved = false; }
 			bool is_reserved() const { return reserved; }
 		private:
-			const char * name;
+			kstring name;
 			unsigned int number;
 			bool reserved = false;
 	};
@@ -36,7 +39,7 @@ namespace wagtail
 	class character_device : public device, public kostream, public kistream
 	{
 		public:
-			character_device(const char * name) : device(name) {}
+			character_device(const kstring & name) : device(name) {}
 	};
 
 	// Base class for block devices:
@@ -48,7 +51,7 @@ namespace wagtail
 			static_assert(sizeof(block_address_t) == 8, "block_address_t should be 64 bits long");
 
 			// Constructs a block device object with the specified name and block size:
-			block_device(unsigned int block_size, const char * name) : device(name), block_size(block_size) {}
+			block_device(unsigned int block_size, const kstring & name) : device(name), block_size(block_size) {}
 
 			// Gets the block size for this device:
 			virtual unsigned int get_block_size() const { return block_size; }
