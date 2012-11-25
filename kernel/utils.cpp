@@ -25,23 +25,6 @@ unsigned int utils::mask_left(int bit)
 	return retval;
 }
 
-int utils::index(const char * input, char c)
-{
-	for(unsigned int i = 0; i < strlen(input); ++i)
-		if(input[i] == c)
-			return i;
-	return -1;
-}
-
-char * utils::substring(const char * input, int a, int b)
-{
-	char * retval = new char[b - a + 1];
-	for(int i = a; i < b; ++i)
-		retval[i - a] = input[i];
-	retval[b - a] = 0;
-	return retval;
-}
-
 unsigned int utils::strlen(const char * string)
 {
 	unsigned int count = 0;
@@ -70,17 +53,5 @@ char * utils::strcat(char * dest, const char * source)
 		dest[offset + i] = source[i];
 
 	return dest;
-}
-
-bool utils::str_equals(const char * a, const char * b)
-{
-	if(strlen(a) != strlen(b))
-		return false;
-	else {
-		for(unsigned int i = 0; i < strlen(a); ++i)
-			if(a[i] != b[i])
-				return false;
-		return true;
-	}
 }
 
