@@ -5,6 +5,8 @@
 #ifndef WAGTAIL_VFS_H
 #define WAGTAIL_VFS_H
 
+#include "direntry.h"
+#include "file.h"
 #include "filesystem.h"
 #include "kstring.h"
 #include "partition.h"
@@ -29,6 +31,9 @@ namespace wagtail
 
 			// Gets the free space of all the mounted filesystems together:
 			unsigned long long get_free_space() const override;
+
+			// Reads a file from the filesystem:
+			file * open_file(const kstring & path) override { return nullptr; }
 
 			// Reads the specified directory from the filesystem:
 			direntry * read_directory(const kstring & path) override;

@@ -7,9 +7,12 @@
 
 #include "../device.h"
 #include "../direntry.h"
+#include "../file.h"
 #include "../filesystem.h"
 #include "../kstring.h"
 #include "../partition.h"
+
+#include "fat32_file.h"
 
 // Uncomment the following define to enable lots and lots of
 // debugging messages from the FAT32 driver:
@@ -22,6 +25,8 @@ namespace wagtail
 		// FAT32 filesystem driver.
 		class fat32 final : public filesystem
 		{
+			friend class fat32_file;
+
 			public:
 				fat32(partition * part);
 
@@ -31,6 +36,9 @@ namespace wagtail
 
 				// Gets the volume ID:
 				const kstring & get_label() const override { return volume_label; }
+
+				// Opens a file:
+				file * open_file(const kstring & path) override;
 
 				// Reads the specified directory:
 				direntry * read_directory(const kstring & path) override;
@@ -55,7 +63,7 @@ namespace wagtail
 
 				// Translates a cluster number into a block address for use with the
 				// underlying block device:
-				inline block_device::block_address_t get_cluster_address(unsigned int num) const;
+				block_device::block_address_t get_cluster_address(unsigned int num) const;
 
 				// "Decodes" and 8.3 filename, which basically means to remove the padding
 				// bytes and insert the dot before the extension:

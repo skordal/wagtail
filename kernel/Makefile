@@ -14,8 +14,10 @@ SOURCE_FILES := \
 	device.cpp \
 	device_mgr.cpp \
 	direntry.cpp \
+	file.cpp \
 	filesystem.cpp \
 	filesystems/fat32.cpp \
+	filesystems/fat32_file.cpp \
 	irq_handler.cpp \
 	kernel.cpp \
 	kstream.cpp \

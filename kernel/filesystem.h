@@ -6,12 +6,14 @@
 #define WAGTAIL_FILESYSTEM_H
 
 #include "direntry.h"
+#include "file.h"
 #include "kstring.h"
 #include "partition.h"
 
 namespace wagtail
 {
 	class direntry;
+	class file;
 
 	class filesystem
 	{
@@ -39,6 +41,9 @@ namespace wagtail
 			// Returns whether this filesystem can be used. If a fatal error occurs
 			// during initialization of a filesystem driver, usable is set to false:
 			bool is_usable() const { return usable; }
+
+			// Opens a file on the specified filesystem:
+			virtual file * open_file(const kstring & path) = 0;
 
 			// Reads the specified directory and returns a pointer to the first directory
 			// entry for the directory. If there are is no such directory, nullptr is

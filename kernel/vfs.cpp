@@ -73,6 +73,28 @@ filesystem * vfs::get_filesystem(const kstring & path) const
 	return nullptr;
 }
 
+file * vfs::open_file(const kstring & path)
+{
+	mountpoint * current = mount_list;
+
+	while(current != nullptr)
+	{
+		kstring prefix = kstring(path, 0, current->get_path().get_length());
+		if(prefix == current->get_path())
+		{
+			if(prefix == "/")
+				return current->get_filesystem()->open_file(path);
+			else
+				return current->get_filesystem()->open_file(
+					kstring(path, current->get_path().get_length(), path.get_length()));
+		}
+
+		current = current->get_next();
+	}
+
+	return nullptr;
+}
+
 direntry * vfs::read_directory(const kstring & path)
 {
 	mountpoint * current = mount_list;
@@ -80,10 +102,6 @@ direntry * vfs::read_directory(const kstring & path)
 	while(current != nullptr)
 	{
 		kstring prefix = kstring(path, 0, current->get_path().get_length());
-		kernel::message() << "Prefix: " << prefix << kstream::newline;
-		if(prefix == "/")
-			kernel::message() << "Is root" << kstream::newline;
-
 		if(prefix == current->get_path())
 		{
 			if(prefix == "/")

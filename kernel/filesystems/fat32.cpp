@@ -147,13 +147,41 @@ unsigned long long fat32::get_free_space() const
 	return retval;
 }
 
+file * fat32::open_file(const kstring & path)
+{
+	kstring dir = path.dirname();
+	kstring filename = path.filename();
+
+	direntry * dir_contents = read_directory(dir);
+	if(dir_contents == nullptr)
+	{
+		kernel::message() << "File not found: " << path << ": directory does not exist!"
+			<< kstream::newline;
+		return nullptr;
+	}
+
+	direntry * file = direntry::find_entry(filename, dir_contents);
+	if(file == nullptr)
+	{
+		kernel::message() << "File not found: " << path << ": file does not exist!"
+			<< kstream::newline;
+		direntry::free_list(dir_contents);
+		return nullptr;
+	}
+
+	wagtail::file * retval = new fat32_file(path, this, file->get_size(), file->get_inode());
+	direntry::free_list(dir_contents);
+
+	return retval;
+}
+
 direntry * fat32::read_directory(const kstring & path)
 {
 	kstring mutable_path(path[0] == '/' ? path.get_buffer() + 1 : path);
 	direntry * retval = nullptr;
 
 	// If / is requested, return it directly:
-	if(path == "/")
+	if(path == "/" || mutable_path == "")
 		return read_directory(2);
 
 	direntry * current = read_directory(2);
@@ -209,8 +237,8 @@ direntry * fat32::read_directory(unsigned int cluster)
 
 	// Read the directory listing:
 	do {
-		char * buffer = new char[get_partition()->get_block_size()];
-		get_partition()->read_block(buffer, get_cluster_address(cluster));
+		char * buffer = new char[get_partition()->get_block_size() * sectors_per_cluster];
+		get_partition()->read_blocks(buffer, get_cluster_address(cluster), sectors_per_cluster);
 
 		for(unsigned int i = 0; i < get_partition()->get_block_size(); i += 32)
 		{
