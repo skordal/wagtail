@@ -153,7 +153,7 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 					break;
 				} else if(offset > sizeof(block) && current_block->get_size() - offset >= size)
 				{
-					block * split_block = current_block->split(offset);
+					block * split_block = current_block->split(offset - sizeof(block));
 					split_block->set_used();
 					return_address = reinterpret_cast<unsigned int>(split_block->get_address());
 					break;
