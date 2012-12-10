@@ -23,8 +23,8 @@ namespace wagtail
 					unsigned int start_cluster, bool read_only = true);
 				~fat32_file() {}
 
-				bool read(void * buffer, unsigned int offset, unsigned int size) override;
-				bool write(void * buffer, unsigned int offset, unsigned int size) override;
+				bool read(void * buffer, unsigned int size, unsigned int offset = 0) override;
+				bool write(void * buffer, unsigned int size, unsigned int offset = 0) override;
 			private:
 				fat32 * fs;
 		};

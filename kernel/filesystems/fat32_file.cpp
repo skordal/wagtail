@@ -14,7 +14,7 @@ fat32_file::fat32_file(const kstring & path, fat32 * fs, unsigned long long size
 
 }
 
-bool fat32_file::read(void * buffer, unsigned int offset, unsigned int size)
+bool fat32_file::read(void * buffer, unsigned int size, unsigned int offset)
 {
 	const unsigned int bytes_per_cluster = fs->bytes_per_sector << (fs->sectors_per_cluster - 1);
 	int cluster = get_start_inode();
@@ -55,7 +55,7 @@ bool fat32_file::read(void * buffer, unsigned int offset, unsigned int size)
 	return retval;
 }
 
-bool fat32_file::write(void * buffer, unsigned int offset, unsigned int size)
+bool fat32_file::write(void * buffer, unsigned int size, unsigned int offset)
 {
 	if(is_read_only())
 	{

@@ -20,8 +20,8 @@ namespace wagtail
 				unsigned int start_inode, bool read_only = true);
 			virtual ~file() {}
 
-			virtual bool read(void * buffer, unsigned int offset, unsigned int length) = 0;
-			virtual bool write(void * buffer, unsigned int offset, unsigned int length) = 0;
+			virtual bool read(void * buffer, unsigned int length, unsigned int offset = 0) = 0;
+			virtual bool write(void * buffer, unsigned int length, unsigned int offset = 0) = 0;
 
 			virtual unsigned long long get_size() const { return size; }
 
