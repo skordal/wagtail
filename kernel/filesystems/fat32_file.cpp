@@ -9,16 +9,16 @@ using namespace wagtail;
 using namespace wagtail::filesystems;
 
 fat32_file::fat32_file(const kstring & path, fat32 * fs, unsigned long long size,  unsigned int start_cluster, bool read_only)
-	: file(path, fs, size, start_cluster, read_only), fs(fs)
+	: file(path, fs, size, start_cluster, read_only), fs(fs),
+	bytes_per_cluster(fs->bytes_per_sector << (fs->sectors_per_cluster - 1))
 {
-
+	kernel::message() << "Bytes per cluster: " << (int) bytes_per_cluster << kstream::newline;
 }
 
 bool fat32_file::read(void * buffer, unsigned int size, unsigned int offset)
 {
-	const unsigned int bytes_per_cluster = fs->bytes_per_sector << (fs->sectors_per_cluster - 1);
 	int cluster = get_start_inode();
-	int bytes_read = 0;
+	unsigned int bytes_read = 0;
 	bool retval = false;
 
 	for(; offset > bytes_per_cluster; offset -= bytes_per_cluster)
@@ -35,15 +35,15 @@ bool fat32_file::read(void * buffer, unsigned int size, unsigned int offset)
 	}
 
 	char * temp_buffer = new char[bytes_per_cluster];
-	for(unsigned int i = 0; i < size; i += bytes_per_cluster - offset)
+	while(bytes_read < size)
 	{
 		fs->get_partition()->read_blocks(temp_buffer, fs->get_cluster_address(cluster), fs->sectors_per_cluster);
-		for(unsigned int j = offset; j < bytes_per_cluster && j < size; ++j)
-			((char *) buffer)[bytes_read++] = temp_buffer[j];
+		for(unsigned int j = offset; j < bytes_per_cluster && bytes_read < size; ++j, ++bytes_read)
+			*((char *) buffer + bytes_read) = temp_buffer[j];
 		offset = 0;
 
 		cluster = fs->get_next_cluster(cluster);
-		if((cluster == 0 || cluster == 1) && i + bytes_per_cluster - offset < size)
+		if((cluster == 0 || cluster == 1) && bytes_read < size)
 		{
 			kernel::message() << get_path() << ": read error: end of file reached."
 				<< kstream::newline;

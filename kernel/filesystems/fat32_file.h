@@ -27,6 +27,7 @@ namespace wagtail
 				bool write(void * buffer, unsigned int size, unsigned int offset = 0) override;
 			private:
 				fat32 * fs;
+				unsigned int bytes_per_cluster;
 		};
 	}
 }
