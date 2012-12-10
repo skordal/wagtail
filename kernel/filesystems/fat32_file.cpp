@@ -38,7 +38,7 @@ bool fat32_file::read(void * buffer, unsigned int size, unsigned int offset)
 	for(unsigned int i = 0; i < size; i += bytes_per_cluster - offset)
 	{
 		fs->get_partition()->read_blocks(temp_buffer, fs->get_cluster_address(cluster), fs->sectors_per_cluster);
-		for(unsigned int j = offset; j < bytes_per_cluster; ++j)
+		for(unsigned int j = offset; j < bytes_per_cluster && j < size; ++j)
 			((char *) buffer)[bytes_read++] = temp_buffer[j];
 		offset = 0;
 
