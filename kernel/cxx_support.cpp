@@ -4,9 +4,14 @@
 
 #include "cxx_support.h"
 
+using namespace wagtail;
+
 // Function required for using pure virtual classes:
 extern "C" void __cxa_pure_virtual()
 {
-	// Nothing required.
+	kernel::message() << kstream::newline
+		<< "*** FATAL ERROR: A pure virtual function call failed! ***" << kstream::newline
+		<< "*** FATAL ERROR: Your kernel binary is probably erroneously compiled and linked." << kstream::newline;
+	kernel::panic();
 }
 
