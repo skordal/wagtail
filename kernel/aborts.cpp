@@ -12,11 +12,11 @@ void wagtail::data_abort()
 	void * fault_address;
 	unsigned int fault_status;
 
-	// Read the fault status register:
+	// Read the fault status register (DFSR):
 	asm volatile("mrc p15, 0, %[status_reg], c5, c0, 0\n\t"
 		: [status_reg] "=r" (fault_status));
 
-	// Read the address causing the fault:
+	// Read the address causing the fault (DFAR):
 	asm volatile("mrc p15, 0, %[address_reg], c6, c0, 0\n\t"
 		: [address_reg] "=r" (fault_address));
 
@@ -30,8 +30,13 @@ void wagtail::data_abort()
 
 void wagtail::prefetch_abort()
 {
-	kernel::message() << kstream::newline << "Prefetch abort!" << kstream::newline;
-	kernel::message() << "Please implement a handler for this exception." << kstream::newline;
-	kernel::panic();
+	void * fault_address;
+
+	// Read the fault address (IFAR):
+	asm volatile("mrc p15, 0, %[fault_address], c6, c0, 2\n\t"
+		: [fault_address] "=r" (fault_address));
+
+	kernel::message() << kstream::newline << "Prefetch abort when trying to access "
+		<< fault_address << kstream::newline;
 }
 
