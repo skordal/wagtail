@@ -70,6 +70,15 @@ kostream & kostream::operator << (int number)
 	return *this;
 }
 
+kostream & kostream::operator << (bool boolean)
+{
+	if(boolean)
+		*this << "true";
+	else
+		*this << "false";
+	return *this;
+}
+
 // Reads a string for a stream:
 kistream & kistream::operator >> (const char * string)
 {

@@ -24,6 +24,8 @@ namespace wagtail
 			virtual kostream & operator << (void * pointer);
 			// Prints a decimal number:
 			virtual kostream & operator << (int value);
+			// Prints a boolean:
+			virtual kostream & operator << (bool boolean);
 	};
 
 	// Kernel input stream:
