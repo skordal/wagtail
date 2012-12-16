@@ -33,7 +33,7 @@ namespace wagtail
 			unsigned long long get_free_space() const override;
 
 			// Reads a file from the filesystem:
-			file * open_file(const kstring & path) override { return nullptr; }
+			file * open_file(const kstring & path) override;
 
 			// Reads the specified directory from the filesystem:
 			direntry * read_directory(const kstring & path) override;
