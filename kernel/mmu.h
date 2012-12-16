@@ -152,7 +152,13 @@ namespace wagtail
 			static void initialize();
 
 			// Clears the TLB:
-			static inline void clear_tlb() { asm volatile("mcr p15, 0, r0, c8, c7, 0\n\t"); }
+			static void clear_tlb()
+			{
+				asm volatile(
+					"eor r0, r0, r0\n\t"
+					"mcr p15, 0, r0, c8, c7, 0\n\t"
+					::: "r0");
+			}
 
 			// Maps a device into the kernel translation table,
 			// starting at the specified base and continuing up until
@@ -163,6 +169,9 @@ namespace wagtail
 
 			// Gets a reference to the kernel translation table:
 			static kernel_translation_table_t & get_kernel_table() { return kernel_translation_table; }
+
+			// Converts the specified virtual address into a physical address:
+			static void * virtual_to_physical(void * virt);
 		private:
 			// Page table class:
 			class __attribute((packed)) page_table

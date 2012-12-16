@@ -83,6 +83,26 @@ void * mmu::map_device(void * base, unsigned int size)
 	return retval;
 }
 
+void * mmu::virtual_to_physical(void * virt)
+{
+	unsigned int retval, offset = (unsigned int) virt & 0xfff;
+
+	// The resolution of the MMU translation instruction seems to be 4096 bytes, so
+	// clear the unused bits:
+	virt = (void *) ((unsigned int) virt & 0xfffff000);
+
+	asm volatile(
+		"mcr p15, 0, %[virt], c7, c8, 0\n\t"
+		"isb\n\t"
+		"mrc p15, 0, %[retval], c7, c4, 0\n\t"
+		: [retval] "=r" (retval)
+		: [virt] "r" (virt)
+		:
+	);
+
+	return (void *) ((retval & 0xfffff000) + offset);
+}
+
 // Constructs and zeroes a page table:
 mmu::page_table::page_table()
 {
