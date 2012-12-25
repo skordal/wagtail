@@ -12,14 +12,19 @@ fat32_file::fat32_file(const kstring & path, fat32 * fs, unsigned long long size
 	: file(path, fs, size, start_cluster, read_only), fs(fs),
 	bytes_per_cluster(fs->bytes_per_sector << (fs->sectors_per_cluster - 1))
 {
+#ifdef WAGTAIL_FS_FAT32_DEBUG
 	kernel::message() << "Bytes per cluster: " << (int) bytes_per_cluster << kstream::newline;
+#endif
 }
 
 bool fat32_file::read(void * buffer, unsigned int size, unsigned int offset)
 {
 	int cluster = get_start_inode();
 	unsigned int bytes_read = 0;
-	bool retval = false;
+
+#ifdef WAGTAIL_FS_FAT32_DEBUG
+	kernel::message() << "Going to read " << (int) size << " bytes from " << get_path() << " at offset " << (int) offset << kstream::newline;
+#endif
 
 	for(; offset > bytes_per_cluster; offset -= bytes_per_cluster)
 	{
@@ -52,7 +57,7 @@ bool fat32_file::read(void * buffer, unsigned int size, unsigned int offset)
 	}
 	delete[] temp_buffer;
 
-	return retval;
+	return true;
 }
 
 bool fat32_file::write(void * buffer, unsigned int size, unsigned int offset)
