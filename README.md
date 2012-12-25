@@ -22,6 +22,8 @@ To build Wagtail, you need the following:
 
 When you have the pre-requisites, simply run `make`.
 
+The kernel image is named `wagtail.itb` and is located in the `kernel` directory.
+
 Note that to boot Wagtail, you will need a uboot image on your Beagleboard that has been patched to enable the new FIT image format. This can easily be done by adding the following somewhere in include/configs/omap3_beagle.h:
 
 ```C
