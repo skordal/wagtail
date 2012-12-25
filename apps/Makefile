@@ -23,7 +23,7 @@ start.o: start.S
 	$(CXX) $(CXXFLAGS) -c -o start.o start.S
 
 # Recipie for building application directories:
-$(APPLICATIONS): application.ld
+$(APPLICATIONS): header.o start.o application.ld
 	@$(MAKE) -C $@
 
 # Clean recipie:
