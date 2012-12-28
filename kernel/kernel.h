@@ -12,6 +12,7 @@
 #include "partition.h"
 #include "scm.h"
 #include "sd.h"
+#include "syscall.h"
 #include "uart.h"
 #include "vfs.h"
 

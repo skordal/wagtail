@@ -32,6 +32,27 @@ int_undef:
 
 @ Supervisor call handler:
 int_svc:
+	push {r0 - r3, ip, lr}
+	push {r0 - r3}
+
+	@ Test if we were called from thumb code:
+	tst lr, #1
+
+	ittee eq
+
+	@ Get the syscall number from a Thumb instruction:
+	ldrheq r0, [lr, #-2]
+	andeq r0, #0xff
+
+	@ Get the syscall number from an ARM instruction:
+	ldrne r0, [lr, #-4]
+	andne r0, #0x00ffffff
+
+	pop {r1 - r3}
+	bl handle_syscall
+	pop {r3}
+
+	pop {r0 - r3, ip, lr}
 	movs pc, lr
 
 @ Prefetch abort handler:

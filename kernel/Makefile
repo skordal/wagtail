@@ -27,6 +27,7 @@ SOURCE_FILES := \
 	partition.cpp \
 	scm.cpp \
 	sd.cpp \
+	syscall.cpp \
 	uart.cpp \
 	utils.cpp \
 	vfs.cpp
@@ -37,8 +38,7 @@ ASSEMBLER_FILES := \
 	start.S
 
 # List of object files to be built:
-OBJECT_FILES = $(ASSEMBLER_FILES:.S=.o) \
-	$(SOURCE_FILES:.cpp=.o)
+OBJECT_FILES = $(ASSEMBLER_FILES:.S=.o) $(SOURCE_FILES:.cpp=.o)
 
 .PHONY: all clean
 

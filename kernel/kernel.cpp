@@ -20,6 +20,9 @@ extern "C" void kernel::kernel_main()
 	// Initialize the IRQ handler:
 	irq_handler::initialize();
 
+	// Initialize the syscall handler and set up the syscalls:
+	syscall_handler::initialize();
+
 	// Initialize the system control module:
 	scm::initialize();
 
