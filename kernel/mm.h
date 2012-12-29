@@ -10,7 +10,7 @@
 #include "static_kstack.h"
 #include "kstream.h"
 #include "mmu.h"
-#include "sdrc.h"
+#include "hardware/sdrc.h"
 #include "utils.h"
 
 namespace wagtail
@@ -83,6 +83,9 @@ namespace wagtail
 
 			// The size of RAM in bytes:
 			static unsigned int ramsize;
+
+			// The physical base address of the SDRC:
+			static constexpr void * const sdrc_physical = reinterpret_cast<void *>(0x6d000000);
 
 			// The virtual base address of the SDRC:
 			static void * sdrc_base;

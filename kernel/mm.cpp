@@ -6,6 +6,7 @@
 #include "mm.h"
 
 using namespace wagtail;
+using namespace wagtail::hardware;
 
 // Symbols imported from the linker script:
 extern void * bss_end, * data_end;
@@ -44,11 +45,11 @@ extern "C" void mm_init()
 void mm::initialize()
 {
 	// Map the SDRC memory space:
-	sdrc_base = mmu::map_device(sdrc::base, 64 * 1024);
+	sdrc_base = mmu::map_device(sdrc_physical, 64 * 1024);
 
 	// Get the amount of available RAM:
-	ramsize += (io::read<unsigned int>(sdrc_base, sdrc::registers::mcfg[0]) >> 8) & 0x3ff;
-	ramsize += (io::read<unsigned int>(sdrc_base, sdrc::registers::mcfg[1]) >> 8) & 0x3ff;
+	ramsize += (io::read<unsigned int>(sdrc_base, sdrc::registers::mcfg0::offset) >> 8) & 0x3ff;
+	ramsize += (io::read<unsigned int>(sdrc_base, sdrc::registers::mcfg1::offset) >> 8) & 0x3ff;
 	// The amount of RAM reported is in units of 2 Mb, so multiply by 2^21 to get bytes:
 	ramsize <<= 21;
 
