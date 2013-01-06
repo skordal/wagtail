@@ -22,6 +22,9 @@ namespace wagtail
 	class mm final
 	{
 		public:
+			// Amount of RAM to reserve (and map) for the kernel heap:
+			static const unsigned int KERNEL_HEAP_SIZE = 4 * 1024 * 1024;
+
 			// Initializes the memory and page manager:
 			static void initialize();
 

@@ -56,12 +56,11 @@ void mm::initialize()
 	// Align the kernel dataspace end to 4096:
 	kernel_dataspace_end = (void *) (((unsigned int) kernel_dataspace_end + 4095) & utils::mask_left(4096));
 
-	// Make sure there is room for the first block of memory:
-	if(reinterpret_cast<unsigned int>(kernel_dataspace_end) - reinterpret_cast<unsigned int>(kernel_data_end) <= sizeof(block))
-	{
-		mmu::get_kernel_table().map_page(kernel_dataspace_end, kernel_dataspace_end, mmu::RW_NA, mmu::DATA);
-		kernel_dataspace_end = reinterpret_cast<void *>(reinterpret_cast<unsigned int>(kernel_dataspace_end) + 4096);
-	}
+	// Map the kernel heap:
+	const unsigned int mapping_start = ((unsigned int) kernel_dataspace_end + 4095) & utils::mask_left(4096);
+	const unsigned int mapping_end = (mapping_start + KERNEL_HEAP_SIZE) & utils::mask_left(4096);
+	mmu::get_kernel_table().map_interval((void *) mapping_start, (void *) mapping_end, kernel_dataspace_end, mmu::RW_NA, mmu::DATA);
+	kernel_dataspace_end = reinterpret_cast<void *>(mapping_end);
 
 	// Create the first block:
 	first_block = reinterpret_cast<block *>(kernel_data_end);
@@ -84,6 +83,7 @@ void mm::initialize()
 	for(unsigned int page_addr = (unsigned int) kernel_dataspace_end;
 		page_addr < ((unsigned int) &ramstart + ramsize); page_addr += 4096)
 		page_stack->push((void *) page_addr);
+
 	page_stack_initialized = true;
 }
 
@@ -115,11 +115,9 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 	size += 3;
 	size &= 0xfffffffc;
 
-	// As this function is used for allocating memory during
-	// initialization of the MMU, a different method of allocating
-	// memory is used. If the MMU is disabled, a pointer to the
-	// memory after the end of the kernel is returned and the
-	// pointer is incremented.
+	// As this function may also used for allocating memory during initialization of the MMU,
+	// a different method of allocating memory is supported; if the MMU is disabled, a pointer to the
+	// memory after the end of the kernel is returned and then incremented.
 	if(!initialization_completed)
 	{
 		return_address = (unsigned int) mm::kernel_data_end;
@@ -136,6 +134,7 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 			*reinterpret_cast<char *>(return_address + i) = 0;
 	} else { // If the MMU is enabled, a block of memory is allocated.
 		block * current_block = first_block;
+
 		do {
 			// Check if the block has enough free space:
 			if(current_block->get_size() >= size && !current_block->is_used())
@@ -145,6 +144,7 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 				// Get the offset into the block needed for correct alignment:
 				unsigned int offset = ((return_address + alignment - 1) & utils::mask_left(alignment))
 					- return_address;
+
 				if(offset == 0)
 				{
 					if(current_block->get_size() > size)
@@ -160,27 +160,6 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 					split_block->set_used();
 					return_address = reinterpret_cast<unsigned int>(split_block->get_address());
 					break;
-				}
-			}
-
-			if(current_block->next == nullptr)
-			{
-				void * new_page = allocate_page();
-				void * new_block_addr = kernel_dataspace_end;
-				mmu::get_kernel_table().map_page(new_page, kernel_dataspace_end, mmu::RW_NA, mmu::DATA);
-				kernel_dataspace_end = (void *)(reinterpret_cast<unsigned int>(kernel_dataspace_end) + 4096);
-
-				if(current_block->is_used())
-				{
-					block * new_block = reinterpret_cast<block *>(new_block_addr);
-					current_block->next = new_block;
-					new_block->prev = current_block;
-					new_block->next = nullptr;
-					new_block->size = 4096 - sizeof(block);
-					new_block->used = false;
-				} else {
-					current_block->set_size(current_block->get_size() + 4096);
-					continue;
 				}
 			}
 
