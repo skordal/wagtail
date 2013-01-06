@@ -14,11 +14,10 @@
  * @param arg1 the first syscall argument.
  * @param arg2 the second syscall argument.
  * @param arg3 the third syscall argument.
- * @param arg4 the fourth syscall argument.
  * @return the return value for the syscall, casted to a `void *`.
  */
 extern "C" void * handle_syscall(unsigned char syscall, void * arg1, void * arg2,
-	void * arg3, void * arg4);
+	void * arg3);
 
 namespace wagtail
 {
@@ -27,7 +26,7 @@ namespace wagtail
 	 */
 	class syscall_handler final
 	{
-		friend void * ::handle_syscall(unsigned char, void *, void *, void *, void *);
+		friend void * ::handle_syscall(unsigned char, void *, void *, void *);
 
 		public:
 			/** Initializes the system call handler instance. */
@@ -43,7 +42,7 @@ namespace wagtail
 			 * @param handler the handler function.
 			 * @param number the system call number to use `handler` for.
 			 */
-			void register_handler(std::function<void *(void *, void *, void *, void *)> handler,
+			void register_handler(std::function<void *(void *, void *, void *)> handler,
 				unsigned char number);
 			/**
 			 * Removes a registered system call handler.
@@ -53,10 +52,10 @@ namespace wagtail
 		private:
 			syscall_handler();
 
-			void * handle_syscall(unsigned char number, void * arg1, void * arg2, void * arg3, void * arg4);
+			void * handle_syscall(unsigned char number, void * arg1, void * arg2, void * arg3);
 			void invalid_handler(unsigned char number);
 
-			std::function<void *(void *, void *, void *, void *)> handlers[256];
+			std::function<void *(void *, void *, void *)> handlers[256];
 
 			static syscall_handler * global_syscall_handler;
 	};

@@ -33,7 +33,9 @@ int_undef:
 @ Supervisor call handler:
 int_svc:
 	push {r0 - r3, ip, lr}
-	push {r0 - r3}
+
+	@ Push the syscall arguments:
+	push {r0 - r2}
 
 	@ Test if we were called from thumb code:
 	tst lr, #1
@@ -48,9 +50,11 @@ int_svc:
 	ldrne r0, [lr, #-4]
 	andne r0, #0x00ffffff
 
+	@ Pop the syscall arguments:
 	pop {r1 - r3}
+
+	@ Call the syscall handler:
 	bl handle_syscall
-	pop {r3}
 
 	pop {r0 - r3, ip, lr}
 	movs pc, lr
