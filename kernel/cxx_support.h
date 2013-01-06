@@ -7,7 +7,7 @@
 
 #include "kernel.h"
 
-// Function required for using pure virtual classes:
+/** Function required to use pure virtual methods. */
 extern "C" void __cxa_pure_virtual();
 
 #endif

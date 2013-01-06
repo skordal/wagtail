@@ -15,61 +15,123 @@
 
 namespace wagtail
 {
-	// Initializes the memory manager, called from assembler code after the
-	// MMU has been enabled:
+	/**
+	 * Initializes the kernel memory manager. This method is called from assembly code
+	 * after the MMU has been enabled, and is simply a wrapper for `mm::initialize()`.
+	 */
 	extern "C" void mm_init();
 
 	class mm final
 	{
 		public:
-			// Amount of RAM to reserve (and map) for the kernel heap:
+			/** Amount of memory to reserve for the kernel heap. */
 			static const unsigned int KERNEL_HEAP_SIZE = 4 * 1024 * 1024;
 
-			// Initializes the memory and page manager:
+			/** Initializes the kernel memory manager. */
 			static void initialize();
 
-			// Prints some debug information about the current memory manager state:
+			/** Prints some statistics about the current state of the memory manager. */
 			static void print_debug_info(kostream & output);
 
-			// Allocates a chunk of memory with the specified alignment:
+			/**
+			 * Allocates a block of memory.
+			 * @param size the size of the block to allocate.
+			 * @param alignment the alignment of the block of memory. Note that alignments
+			 *                  less than 4 will be rounded up.
+			 * @return a newly allocated block of memory or `nullptr` if there is no more memory
+			 *         available.
+			 */
 			static void * allocate(unsigned int size, unsigned int alignment = 4);
-			// Frees a previously allocated chunk of memory:
+			/**
+			 * Frees a previously allocated block of memory.
+			 * @param memory the memory block to free.
+			 */
 			static void free(void * memory);
 
-			// Returns a pointer to an unused page:
+			/**
+			 * Allocates a page.
+			 * @return an unused page or `nullptr` if the system is out of memory.
+			 */
 			static void * allocate_page();
-			// Frees a previously allocated page:
+			/**
+			 * Frees a previously allocated page.
+			 * @param pg the page to free.
+			 */
 			static void free_page(void * pg);
 
-			// Gets the size of the RAM:
+			/**
+			 * Gets the size of RAM.
+			 * @return the size of RAM in bytes.
+			 */
 			static unsigned int get_ramsize() { return ramsize; }
 		private:
+			/**
+			 * Class representing a memory block.
+			 */
 			class block
 			{
 				public:
+					/**
+					 * Constructs a new block of memory.
+					 * @param prev a pointer to the previous memory block header.
+					 * @param next a pointer to the next memory block header.
+					 * @param size the size of the block.
+					 * @param used `true` if the block has been allocated, `false` otherwise.
+					 */
 					block(block * prev, block * next, unsigned int size, bool used = true);
 
-					// Zeroes the memory space of the block:
+					/** Zeroes the contents of the memory block. */
 					void zero();
 
-					// Returns true if the block is in use:
+					/**
+					 * Returns whether the block has been allocated.
+					 * @return `true` if the block is in use, `false` otherwise.
+					 */
 					bool is_used() const { return used; }
-					// Sets the current status of the block:
+					/**
+					 * Sets the current status of the block.
+					 * @param used `true` if the block has been allocated, `false` otherwise.
+					 */
 					void set_used(bool used = true) { this->used = used; }
-					// Returns the size of the block, in bytes:
+
+					/**
+					 * Gets the size of the block.
+					 * @return the size of the block in bytes.
+					 */
 					unsigned int get_size() const { return size; }
-					// Sets the size of the block:
+					/**
+					 * Sets the size of the block.
+					 * @param new_size the new size of the block.
+					 */
 					void set_size(unsigned int new_size) { size = new_size; }
-					// Returns the address of the available memory in the block:
+
+					/**
+					 * Returns the address of the memory for this block.
+					 * @return the address of the memory for this block.
+					 */
 					void * get_address() const { return (void *) ((unsigned int) this + sizeof(block)); }
 
-					// Splits the specified block at the specified offset into the block:
+					/**
+					 * Splits the block at the specified offset into the block.
+					 * @param offset offset to split the block at.
+					 * @return the block that was split off.
+					 */
 					block * split(unsigned int offset);
 
-					// Merges two contigouous blocks of memory:
+					/**
+					 * Merges two contigouous blocks of memory into one.
+					 * @param a the first block.
+					 * @param b the second block.
+					 * @return the merged block.
+					 */
 					static block * merge(block * a, block * b);
 
-					// Checks if two blocks of memory are contigouous:
+					/**
+					 * Checks if two blocks of memory are contigouous.
+					 * @param a the first block.
+					 * @param b the second block.
+					 * @return `true` if the blocks are contigouous, `false` otherwise.
+					 */
 					static bool is_contigouous(const block * a, const block * b);
 				private:
 					block * prev, * next;

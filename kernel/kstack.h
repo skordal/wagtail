@@ -7,28 +7,46 @@
 
 namespace wagtail
 {
-	// Stack interface, used as base class for stack implementations:
+	/**
+	 * Simple stack interface, for use in stack implementations.
+	 */
 	template<typename T> class kstack
 	{
 		public:
+			/** Base stack destructor. */
 			virtual ~kstack() {}
 
-			// Pushes an object onto the stack:
+			/**
+			 * Pushes an element onto a stack.
+			 * @param data the element to push onto the stack.
+			 */
 			virtual void push(const T & data) = 0;
 
-			// Pops an object off the stack:
+			/**
+			 * Pops an object off the stack.
+			 * @return the object popped off the stack.
+			 */
 			virtual T pop() = 0;
 
-			// Pops an object off the stack and returns it trough the argument:
+			/**
+			 * Pops an object off the stack.
+			 * @param var the object popped off the stack is returned through this parameter.
+			 */
 			virtual void pop(T & var) { var = pop(); }
 
-			// Peeks at the object at the top of the stack:
+			/**
+			 * Returns the object at the top of the stack without popping it off.
+			 * @return the object at the top of the stack.
+			 */
 			virtual const T & peek() const = 0;
 
-			// Pops all items off the stack and discards them:
+			/** Clears the stack by popping all the elements and discarding them. */
 			virtual void clear() = 0;
 
-			// Returns true if the stack is empty:
+			/**
+			 * Checks if the stack is empty.
+			 * @return `true` if the stack is empty, `false` otherwise.
+			 */
 			virtual bool is_empty() const = 0;
 	};
 }

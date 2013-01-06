@@ -10,12 +10,13 @@
 
 namespace wagtail
 {
-	// This class controls clocks for various modules in the device
-	// using the PRCM's clock module:
+	/**
+	 * Clock manager class, controlling various functional and interface clocks.
+	 */
 	class clock_mgr final
 	{
 		public:
-			// Functional clocks that can be enabled or disabled:
+			/** Functional clock names. */
 			enum class functional_clocks : unsigned int
 			{
 				mmc3 = 1 << 30,
@@ -23,7 +24,7 @@ namespace wagtail
 				mmc1 = 1 << 24
 			};
 
-			// Interface clocks that can be enabled or disabled:
+			/** Interface clock names. */
 			enum class interface_clocks : unsigned int
 			{
 				mmc3 = 1 << 30,
@@ -31,12 +32,26 @@ namespace wagtail
 				mmc1 = 1 << 24
 			};
 
-			// Enables a clock:
+			/**
+			 * Enables a functional clock.
+			 * @param clock the clock to enable.
+			 */
 			static void enable(functional_clocks clock);
+			/**
+			 * Enables an interface clock.
+			 * @param clock the clock to enable.
+			 */
 			static void enable(interface_clocks clock);
 
-			// Disables a clock:
+			/**
+			 * Disables a functional clock.
+			 * @param clock the clock to disable.
+			 */
 			static void disable(functional_clocks clock);
+			/**
+			 * Disables an interface clock.
+			 * @param clock the clock to disable.
+			 */
 			static void disable(interface_clocks clock);
 		private:
 			static void * core_cm_base;

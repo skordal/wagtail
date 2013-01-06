@@ -18,25 +18,41 @@
 
 namespace wagtail
 {
+	/**
+	 * Central kernel methods.
+	 */
 	namespace kernel
 	{
-		// Returns a stream for printing a message to the kernel log.
-		// NOTE: this function cannot be used in global static constructors,
-		//       because the output device may not have been initialized at
-		//       the point that the global static constructors are run.
+		/**
+		 * Gets the kernel log stream.
+		 * @warning this function cannot be used in static, global constructors,
+		 *          because the output device may not have been initialized at
+		 *          the point where these constructors are run.
+		 */
 		kostream & message();
 
-		// Kernel entry point, called from assembler code:
+		/**
+		 * Kernel entry point. This method is called from assembly code located in
+		 * `start.S`.
+		 */
 		extern "C" void kernel_main();
 
-		// Kernel panic function, stops everything and prints a short error message:
+		/**
+		 * Kernel panic function, prints a short error message and hangs forever.
+		 */
 		extern "C" void panic() __attribute((noreturn));
 
-		// Wagtail version number:
+		/**
+		 * Wagtail version numbers.
+		 */
 		namespace version
 		{
+			/** Major version. */
 			const int major = 0;
+			/** Minor version. */
 			const int minor = 1;
+			/** Revision number. */
+			const int revision = 0;
 		}
 	}
 }

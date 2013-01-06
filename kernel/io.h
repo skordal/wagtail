@@ -7,30 +7,51 @@
 
 namespace wagtail
 {
+	/**
+	 * I/O operations for use with hardware registers.
+	 */
 	namespace io
 	{
-		// Reads one element of the type T from the register located
-		// at (base + offset):
+		/**
+		 * Reads from a register.
+		 * @tparam T type of the data to read.
+		 * @param base the base address of the hardware module.
+		 * @param offset the offset of the register to read from.
+		 * @return the value of the register.
+		 */
 		template<typename T>
 		inline T read(const void * base, unsigned int offset = 0)
 			{ return *(((volatile T *)((unsigned int) base + offset))); }
 		
-		// Writes one element of the type T to the register located
-		// at (base + offset):
+		/**
+		 * Writes to a register.
+		 * @tparam T type of the data to write.
+		 * @param data the data to write to the register.
+		 * @param base the base address of the hardware module.
+		 * @param offset the offset of the register to write to.
+		 */
 		template<typename T>
 		inline void write(T data, const void * base, unsigned int offset = 0)
 			{ *((volatile T *) ((unsigned int) base + offset)) = data; }
 
-		// Reads an element of the specified type T from the register located at
-		// the specified base + offset, does a bitwise OR of its value and the
-		// provided value, and writes it back to the register:
+		/**
+		 * Reads a value from a register, ORs it with a value, and writes it back.
+		 * @tparam T type of the data to operate on.
+		 * @param data the data to OR the register value with.
+		 * @param base the base address of the hardware module.
+		 * @param offset the offset of the register to operate on.
+		 */
 		template<typename T>
 		inline void or_register(T data, const void * base, unsigned int offset = 0)
 			{ T temp = read<T>(base, offset); temp |= data; write(temp, base, offset); }
 
-		// Reads an element of the specified type T from the register at the specified
-		// base + offset and does a bitwise AND of its value and the provided data value and
-		// writes it back to the register:
+		/**
+		 * Reads a value from a register, ANDs it with a value, and writes it back.
+		 * @tparam T type of the data to operate on.
+		 * @param data the data to AND the register value with.
+		 * @param base the base address of the hardware module.
+		 * @param offset the offset of the register to operate on.
+		 */
 		template<typename T>
 		inline void and_register(T data, const void * base, unsigned int offset = 0)
 			{ T temp = read<T>(base, offset); temp &= data; write(temp, base, offset); }

@@ -7,17 +7,30 @@
 
 namespace wagtail
 {
-	// Red-Black tree structure with key type I and node content type T, implemented
-	// using algorithms and guidance from "Introduction to Algorithms" by Cormen, et al.
-	// Turns out, it is nigh impossible to get a different perspective on RB trees on
-	// the Internet, as everyone else also seems to use this book to learn about RB trees.
-	// TODO: Write a method for deleting items.
+	/**
+	 * Red-black tree class. This class is implemented using algorithms and guidance from
+	 * "Introduction to Algorithms" by Cormen, et al. Turns out, it is nigh impossible to
+	 * get a different perspective on such trees, as Cormen seems to be everyone else's 
+	 * source on such trees as well.
+	 *
+	 * @tparam K key type.
+	 * @tparam T data value type.
+	 * @todo Write a method for deleting values from the tree.
+	 */
 	template<typename K, typename T> class rbtree final
 	{
 		public:
+			/**
+			 * Destructs a red-black tree object.
+			 * @todo Remove nodes left in the tree.
+			 */
 			~rbtree() {}
 
-			// Inserts a value into the tree:
+			/**
+			 * Inserts a node into the tree.
+			 * @param key the key to insert the value with.
+			 * @param data the value to insert into the tree.
+			 */
 			void insert(const K & key, const T & data)
 			{
 				node * current = root;
@@ -44,8 +57,12 @@ namespace wagtail
 				insertion_fixup(new_node);
 			}
 
-			// Gets the value of a node. Returns false if a value corresponding to the
-			// specified key was not found:
+			/**
+			 * Gets the value of a node.
+			 * @param key the key to retrieve the value for.
+			 * @param value_out a reference to a variable to store the retrieved value in.
+			 * @return whether the key was found in the tree.
+			 */
 			bool get_value(const K & key, T & value_out) const
 			{
 				node * n = find_node(key);
@@ -56,15 +73,21 @@ namespace wagtail
 				return true;
 			}
 
-			// Checks if a key exists in the tree:
+			/**
+			 * Checks if a key exists in the tree.
+			 * @param key the key to look for.
+			 * @return `true` if the key was found, `false` otherwise.
+			 */
 			bool key_exists(const K & key) const
 			{
 				return find_node(key) != nullptr;
 			}
 
 		private:
-			// Structure for tree nodes.
-			// TODO: possibly make this a class with accessors and private fields.
+			/**
+			 * Structure representing a tree node.
+			 * @todo Make this a class using private fields and accessors.
+			 */
 			struct node
 			{
 				node(const K & key, const T & content, node * parent)
@@ -79,8 +102,11 @@ namespace wagtail
 				node * parent;
 			};
 
-			// Finds the node with the specified key, or nullptr if the node does not
-			// exist:
+			/**
+			 * Finds the node with the specified key.
+			 * @param key the key to look for.
+			 * @return the node, if found, `nullptr` otherwise.
+			 */
 			node * find_node(const K & key) const
 			{
 				node * current = root;
@@ -97,7 +123,10 @@ namespace wagtail
 				return nullptr;
 			}
 
-			// Fixes the tree up after insertion. The parameter n is the newly inserted node.
+			/**
+			 * Fixes the tree up after insertion.
+			 * @param n the newly inserted node.
+			 */
 			void insertion_fixup(node * n)
 			{
 				node * y;
@@ -158,7 +187,10 @@ namespace wagtail
 				root->color = node::BLACK;
 			}
 
-			// Left rotates the specified node:
+			/**
+			 * Left rotates the tree at the specified node.
+			 * @param x the node to rotate around.
+			 */
 			void left_rotate(node * x)
 			{
 				node * y = x->right;
@@ -180,7 +212,10 @@ namespace wagtail
 				x->parent = y;
 			}
 
-			// Right rotates the specified node:
+			/**
+			 * Right rotates the tree at the specified node.
+			 * @param x the node to rotate around.
+			 */
 			void right_rotate(node * x)
 			{
 				node * y = x->left;

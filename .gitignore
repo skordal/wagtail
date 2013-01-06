@@ -6,6 +6,9 @@ wagtail.itb
 wagtail.bin
 wagtail.bin.gz
 
+# Ignore the reference documentation:
+docs/
+
 # Ignore vim swap files:
 .*.swp
 .*.swo

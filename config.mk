@@ -9,8 +9,10 @@ LD           = $(TOOL_PREFIX)ld
 OBJCOPY      = $(TOOL_PREFIX)objcopy
 
 # Build utilities:
+DOXYGEN ?= doxygen
 GREP    ?= grep
 GZIP    ?= gzip
+MKDIR   ?= mkdir
 MKIMAGE ?= mkimage
 RM      ?= rm
 

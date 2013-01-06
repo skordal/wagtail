@@ -9,14 +9,16 @@
 
 namespace wagtail
 {
-	// This is a stack that uses a preallocated memory area for storage.
-	// Pushing in more elements than there is room for causes undefined
-	// behaviour, as does popping off the last element.
+	/**
+	 * Stack implementation using preallocated space for storing its elements.
+	 */
 	template<typename T> class static_kstack final : public kstack<T>
 	{
 		public:
-			// Constructs a new static_kstack with enough space for the specified
-			// amount of elements:
+			/**
+			 * Constructs a new static stack object.
+			 * @param capacity the capacity of the preallocated space.
+			 */
 			static_kstack(int capacity) : capacity(capacity), current_top(-1)
 			{
 				memory_space = new T[capacity];
@@ -24,22 +26,27 @@ namespace wagtail
 					memory_space[i] = 0;
 			}
 
-			// Frees the allocated space:
 			~static_kstack() { delete[] memory_space; }
 
-			// Pushes an element onto the stack:
+			/**
+			 * Pushes an element onto the stack.
+			 * @param data the element to push onto the stack.
+			 * @warning Care must be taken to avoid pushing more elements than there is room for.
+			 */
 			void push(const T & data) override { memory_space[++current_top] = data; }
 
-			// Pops an element off the stack:
-			T pop() override{ return memory_space[current_top--]; }
+			/**
+			 * Pops an element off the stack.
+			 * @return the element popped off the stack.
+			 * @warning Care must be taken to avoid popping off more elements than there are in
+			 *          the stack.
+			 */
+			T pop() override { return memory_space[current_top--]; }
 
-			// Peeks at the element at the top of the stack:
 			const T & peek() const override { return memory_space[current_top]; }
 
-			// Clears the stack:
 			void clear() override { current_top = -1; }
 
-			// Returns true if the stack is empty:
 			bool is_empty() const override { return current_top == -1; }
 		private:
 			int capacity;

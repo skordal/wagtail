@@ -22,25 +22,47 @@ namespace wagtail
 {
 	namespace filesystems
 	{
-		// FAT32 filesystem driver.
+		/**
+		 * FAT32 filesystem driver.
+		 */
 		class fat32 final : public filesystem
 		{
 			friend class fat32_file;
 
 			public:
+				/**
+				 * Constructs a FAT32 driver object for the specified partition.
+				 * @param part the partition to use.
+				 */
 				fat32(partition * part);
 
-				// Gets the amount of free space in the filesystem by reading
-				// the FSInfo sector and calculating the free space in bytes:
+				/**
+				 * Gets the amount of free space on the filesystem.
+				 * This is done by reading the FSInfo sector and calculating the
+				 * free space in bytes.
+				 * @return the amount of free space on the filesystem in bytes.
+				 */
 				unsigned long long get_free_space() const override;
 
-				// Gets the volume ID:
+				/**
+				 * Gets the volume label.
+				 * @return the volume label.
+				 */
 				const kstring & get_label() const override { return volume_label; }
 
-				// Opens a file:
+				/**
+				 * Opens a file on the filesystem.
+				 * @param path the path of the file to open.
+				 * @return a pointer to a `file` object for the opened file, or `nullptr`
+				 *         if the file does not exist.
+				 */
 				file * open_file(const kstring & path) override;
 
-				// Reads the specified directory:
+				/**
+				 * Reads the specified directory and returns its entries.
+				 * @param path the path of the directory to read.
+				 * @return a pointer to the first directory entry in the directory.
+				 */
 				direntry * read_directory(const kstring & path) override;
 			private:
 				static const unsigned char ATTR_READ_ONLY =	0x01;

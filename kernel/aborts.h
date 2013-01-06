@@ -9,10 +9,17 @@
 
 namespace wagtail
 {
-	// Called to handle a data abort exception:
+	/**
+	 * Handles a data abort. This method is called from the data abort interrupt
+	 * handler in `interrupts.S`.
+	 */
 	extern "C" void data_abort();
-	// Called to handle a prefetch abort exception:
-	extern "C" void prefetch_abort(); // TODO: Write me
+
+	/**
+	 * Handles a prefetch abort. This method is called from the data abort interrupt
+	 * handler in `interrupts.S`.
+	 */
+	extern "C" void prefetch_abort();
 }
 
 #endif

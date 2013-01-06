@@ -6,19 +6,24 @@
 # tools and variables.
 include config.mk
 
-.PHONY: all kernel apps clean
+.PHONY: all apps clean docs kernel 
 
-all: kernel apps
+all: kernel
 
-kernel:
-	@echo "Building kernel..."
-	@make -C kernel
+clean:
+	@make -C kernel clean
+	@make -C apps clean
 
 apps:
 	@echo "Building applications..."
 	@make -C apps
 
-clean:
-	@make -C kernel clean
-	@make -C apps clean
+docs:
+	@echo "Building reference documentation..."
+	@$(MKDIR) -p docs
+	@$(DOXYGEN)
+
+kernel:
+	@echo "Building kernel..."
+	@make -C kernel
 

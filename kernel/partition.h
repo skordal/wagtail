@@ -11,31 +11,56 @@
 
 namespace wagtail
 {
-	// The partition class represents a filesystem partition on a block device.
-	// It also works as a wrapper for the block device itself.
+	/**
+	 * Class representing a partition on a block device.
+	 * It also works as a wrapper for the block device itself, where reads and
+	 * writes are bounded to the partition limits.
+	 */
 	class partition : public block_device
 	{
 		public:
+			/** Partition type signifying that the filesystem type should be automatically detected. */
 			static const char auto_type = -1;
 
+			/**
+			 * Constructs a partition object.
+			 * @param device the underlying block device.
+			 * @param start_addr start address of the partition.
+			 * @param end_addr end address of the partition.
+			 * @param type MBR partition type code.
+			 * @param num partition number on the device.
+			 */
 			partition(block_device * device, block_address_t start_addr,
 				block_address_t end_addr, char type, int num);
-			~partition() {}
+			/** Destructs a partition object. */
+			virtual ~partition() {}
 
-			// Overrides for doing I/O on the underlying block device; these methods
-			// checks if the specified block address is within the bounds of the partition,
-			// and only allows I/O inside it.
 			bool read_block(void * buffer, block_address_t address) override;
 			bool read_blocks(void * buffer, block_address_t address, int length) override;
 			bool write_block(const void * buffer, block_address_t address) override;
 			bool write_blocks(const void * buffer, block_address_t address, int length) override;
 
+			/**
+			 * Gets the start address of the partition.
+			 * @return the start address of the partition.
+			 */
 			block_address_t get_start_address() const { return start; }
+			/**
+			 * Gets the end address of the partition.
+			 * @return the end address of the partition.
+			 */
 			block_address_t get_end_address() const { return end; }
 
-			// Gets the partition type:
+			/**
+			 * Gets the partition type code.
+			 * @return the partition type code.
+			 */
 			char get_type() const { return type; }
 
+			/**
+			 * Gets the partition size.
+			 * @return the partition size, in blocks.
+			 */
 			unsigned long long get_size() const { return end - start; }
 		private:
 			// Creates a partition device name from the basename of

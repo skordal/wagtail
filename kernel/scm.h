@@ -9,10 +9,13 @@
 
 namespace wagtail
 {
-	// Driver for the system control module
+	/**
+	 * Driver for the system control module.
+	 */
 	class scm final
 	{
 		public:
+			/** Class representing a single PADCONF register. */
 			class padconf_register
 			{
 				public:
@@ -25,10 +28,16 @@ namespace wagtail
 			};
 			static_assert(sizeof(padconf_register) == 4, "padconf_register must be 32 bits long");
 
+			/** Initializes the system control module. */
 			static void initialize();
+			/** Gets the global system control module driver instance. */
 			static scm * get() { return global_scm; }
 
-			// Gets the specified PADCONF register:
+			/**
+			 * Gets a pointer to a specific PADCONF register.
+			 * @param index index of the PADCONF register.
+			 * @return a pointer to the specified PADCONF register.
+			 */
 			padconf_register * get_padconf_register(unsigned int index);
 		private:
 			scm();

@@ -7,24 +7,48 @@
 
 #include <functional>
 
-// Syscall handler used by the interrupt handler:
+/**
+ * Syscall handler wrapper function. This method is called by the interrupt handler
+ * in `interrupts.S`.
+ * @param syscall the syscall number.
+ * @param arg1 the first syscall argument.
+ * @param arg2 the second syscall argument.
+ * @param arg3 the third syscall argument.
+ * @param arg4 the fourth syscall argument.
+ * @return the return value for the syscall, casted to a `void *`.
+ */
 extern "C" void * handle_syscall(unsigned char syscall, void * arg1, void * arg2,
 	void * arg3, void * arg4);
 
 namespace wagtail
 {
+	/**
+	 * System call handler.
+	 */
 	class syscall_handler final
 	{
 		friend void * ::handle_syscall(unsigned char, void *, void *, void *, void *);
 
 		public:
+			/** Initializes the system call handler instance. */
 			static void initialize();
+			/**
+			 * Gets the global system call handler instance.
+			 * @return the global system call handler instance.
+			 */
 			static syscall_handler * get() { return global_syscall_handler; }
 
-			// Registers a handler for the specified system call number:
+			/**
+			 * Registers a handler for a system call.
+			 * @param handler the handler function.
+			 * @param number the system call number to use `handler` for.
+			 */
 			void register_handler(std::function<void *(void *, void *, void *, void *)> handler,
 				unsigned char number);
-			// Removes the registered handler for a specified system call number:
+			/**
+			 * Removes a registered system call handler.
+			 * @param number the system call number to remove the handler from.
+			 */
 			void unregister_handler(int number);
 		private:
 			syscall_handler();

@@ -9,43 +9,59 @@
 
 namespace wagtail
 {
-	// Function called from assembler code to initialize the MMU:
+	/**
+	 * Initializes the kernel translation tables before enabling the MMU.
+	 * This method is called from assembly code in `start.S`, and is a
+	 * wrapper for `mmu::initialize()`.
+	 */
 	extern "C" void mmu_init();
 
+	/**
+	 * Class representing the MMU.
+	 *
+	 * This class handles the setup of translation tables and page tables.
+	 */
 	class mmu final
 	{
 		public:
-			// Memory interval access permissions, Kernel_User:
+			/** Memory access permissions. */
 			typedef enum {
-				RW_RW,
-				RW_RO,
-				RW_NA,
-				RO_RO,
-				RO_NA,
-				NA_NA
+				RW_RW, /**< Kernel: read-write; user: read-write. */
+				RW_RO, /**< Kernel: read-write; user: read-only. */
+				RW_NA, /**< Kernel: read-write; user: no access. */
+				RO_RO, /**< Kernel: read-only; user: read-only. */
+				RO_NA, /**< Kernel: read-only; user: no access. */
+				NA_NA  /**< No access for anyone. */
 			} permissions_t;
 
-			// Memory interval type:
+			/**
+			 * Memory interval types.
+			 * This is used to make sure different sections of memory get
+			 * correct attributes.
+			 */
 			typedef enum {
-				CODE,
-				DATA,
-				RODATA,
-				STACK,
-				DEVICE
+				CODE,   /**< Section containing executable code. */
+				DATA,   /**< Section containing read-write data. */
+				RODATA, /**< Section containing read-only data. */
+				STACK,  /**< Section containing a stack. */
+				DEVICE  /**< Section containing device memory. */
 			} interval_type_t;
 
-			// Translation table class, which contains space for the specified
-			// amount of entries:
-			template<int entries> class __attribute((packed)) translation_table
+			/**
+			 * Class representing a translation table.
+			 * @tparam entries the number of entries in the translation table.
+			 */
+			template<int entries> class translation_table
 			{
 				public:
-					// Take care not to add a constructor here! The kernel
-					// translation table is static and used before global
-					// constructors are run, so if this class were to require
-					// a constructor, it would not be run until after the
-					// class has been used!
-
-					// Maps an interval in the page table:
+					/**
+					 * Maps an interval of memory in the translation table.
+					 * @param start physical start address of the interval.
+					 * @param end physical end address of the interval.
+					 * @param virtual_address the virtual address to start the mapping at.
+					 * @param permissions interval access permissions.
+					 * @param type memory interval type.
+					 */
 					void map_interval(void * start, void * end, void * virtual_address,
 						permissions_t permissions, interval_type_t type)
 					{
@@ -61,7 +77,11 @@ namespace wagtail
 						}
 					}
 
-					// Unmaps an interval of virtual memory:
+					/**
+					 * Unmaps an interval of virtual memory.
+					 * @param start virtual start address of the interval.
+					 * @param end virtual end address of the interval.
+					 */
 					void unmap_interval(void * start, void * end)
 					{
 						unsigned int current_address = reinterpret_cast<unsigned int>(start);
@@ -72,7 +92,13 @@ namespace wagtail
 						}
 					}
 
-					// Maps a page:
+					/**
+					 * Maps a physical page to a virtual address.
+					 * @param page the physical address of the page.
+					 * @param virt the virtual address to map the page to.
+					 * @param permissions access permissions for the page.
+					 * @param type type of memory for the mapped memory.
+					 */
 					void map_page(void * page, void * virt, permissions_t permissions,
 						interval_type_t type)
 					{
@@ -90,7 +116,10 @@ namespace wagtail
 						pt->add_entry(pt_index, page, permissions, type);
 					}
 
-					// Unmaps a page from the specified virtual address:
+					/**
+					 * Unmaps a page from a virtual address.
+					 * @param page the virtual address of the page.
+					 */
 					void unmap_page(void * page)
 					{
 						unsigned int address = reinterpret_cast<unsigned int>(page);
@@ -110,12 +139,12 @@ namespace wagtail
 					unsigned int table[entries] __attribute((aligned(4*entries)));
 			};
 
-			// Kernel translation table type:
+			/** Kernel translation table type (4096 entries). */
 			typedef translation_table<4096> kernel_translation_table_t;
-			// Application translation table type:
+			/** Application translation table type (2048 entries). */
 			typedef translation_table<2048> application_translation_table_t;
 
-			// First level page table entry types:
+			/** Constants used in first level translation tables. */
 			struct l1
 			{
 				static const int type_fault = 0b00;
@@ -124,14 +153,14 @@ namespace wagtail
 				static const int type_supersection = (1 << 18)|0b10;
 			};
 
-			// Second level page table entry types:
+			/** Constants used in second level translation tables. */
 			struct l2
 			{
 				static const int type_fault = 0b00;
 				static const int type_large_page = 0b01;
 				static const int type_small_page = 0b10;
 
-				// Small page attribute bits:
+				/** Small page (4096 bytes) attribute bits. */
 				struct small_page
 				{
 					static const int ng =	1 << 11;
@@ -148,45 +177,66 @@ namespace wagtail
 				};
 			};
 
-			// Creates the initial page tables and initializes the MMU:
+			/**
+			 * Initializes the MMU.
+			 * Sets up the initial kernel translation table and some MMU registers. The
+			 * MMU is not actually enabled until after this method has been executed.
+			 */
 			static void initialize();
 
-			// Clears the TLB:
-			static void clear_tlb()
-			{
-				asm volatile(
-					"eor r0, r0, r0\n\t"
-					"mcr p15, 0, r0, c8, c7, 0\n\t"
-					::: "r0");
-			}
+			/** Clears the unified TLB. */
+			static void clear_tlb() { asm volatile("mcr p15, 0, r0, c8, c7, 0\n\t"); }
 
-			// Maps a device into the kernel translation table,
-			// starting at the specified base and continuing up until
-			// base + size (rounded up to align with 4096 bytes).
-			// The function returns the address of the start address
-			// of the mapping.
+			/**
+			 * Maps a device into the kernel translation table.
+			 * @param base the physical base address of the device's address space.
+			 * @param size the size of the device's address space.
+			 * @return the virtual address of the device.
+			 */
 			static void * map_device(void * base, unsigned int size);
 
-			// Gets a reference to the kernel translation table:
+			/**
+			 * Gets a reference to the kernel translation table.
+			 * @return a reference to the kernel translation table.
+			 */
 			static kernel_translation_table_t & get_kernel_table() { return kernel_translation_table; }
 
-			// Converts the specified virtual address into a physical address:
+			/**
+			 * Converts the specified virtual address into a physical address.
+			 * This is done using MMU registers.
+			 * @param virt the virtual address to translate.
+			 * @return the physical address corresponding to the virtual.
+			 */
 			static void * virtual_to_physical(void * virt);
 		private:
-			// Page table class:
-			class __attribute((packed)) page_table
+			/**
+			 * Class representing a page table.
+			 */
+			class page_table
 			{
 				public:
-					// Constructs and zeroes the page table:
+					/** Constructs and zeroes a page table object. */
 					page_table();
 
-					// Adds an entry to the page table:
+					/**
+					 * Adds an entry to the translation table.
+					 * @param offset offset into the page table.
+					 * @param the physical address to use in the mapping.
+					 * @param permissions permissions for the mapping.
+					 * @param type memory interval type for the mapping.
+					 */
 					void add_entry(int offset, void * physical, permissions_t permissions,
 						interval_type_t type);
-					// Removes an entry from the page table:
+					/**
+					 * Removes a mapping from the table.
+					 * @param offset the offset into the table to remove the mapping from.
+					 */
 					void remove_entry(int offset);
 
-					// Checks if a page table is empty:
+					/**
+					 * Checks if a page table is empty.
+					 * @return `true` if the table is empty, `false` otherwise.
+					 */
 					bool is_empty() const;
 				private:
 					unsigned int table[256];
