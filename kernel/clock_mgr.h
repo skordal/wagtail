@@ -10,27 +10,27 @@
 
 namespace wagtail
 {
-	// Functional clocks that can be enabled or disabled:
-	enum class functional_clocks : unsigned int
-	{
-		mmc3 = 1 << 30,
-		mmc2 = 1 << 25,
-		mmc1 = 1 << 24
-	};
-
-	// Interface clocks that can be enabled or disabled:
-	enum class interface_clocks : unsigned int
-	{
-		mmc3 = 1 << 30,
-		mmc2 = 1 << 25, 
-		mmc1 = 1 << 24
-	};
-
 	// This class controls clocks for various modules in the device
 	// using the PRCM's clock module:
 	class clock_mgr final
 	{
 		public:
+			// Functional clocks that can be enabled or disabled:
+			enum class functional_clocks : unsigned int
+			{
+				mmc3 = 1 << 30,
+				mmc2 = 1 << 25,
+				mmc1 = 1 << 24
+			};
+
+			// Interface clocks that can be enabled or disabled:
+			enum class interface_clocks : unsigned int
+			{
+				mmc3 = 1 << 30,
+				mmc2 = 1 << 25, 
+				mmc1 = 1 << 24
+			};
+
 			// Enables a clock:
 			static void enable(functional_clocks clock);
 			static void enable(interface_clocks clock);

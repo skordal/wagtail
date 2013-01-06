@@ -70,8 +70,8 @@ sd::sd() : block_device(512, "sd0"), virtual_base(mmu::map_device(sd::BASE_ADDRE
 {
 	kernel::message() << "Initializing SD module..." << kstream::newline;
 
-	clock_mgr::enable(functional_clocks::mmc1);
-	clock_mgr::enable(interface_clocks::mmc1);
+	clock_mgr::enable(clock_mgr::functional_clocks::mmc1);
+	clock_mgr::enable(clock_mgr::interface_clocks::mmc1);
 
 	io::write(registers::sysconfig::softreset, virtual_base, registers::sysconfig::offset);
 	while(!(io::read<int>(virtual_base, registers::sysstatus::offset) & registers::sysstatus::resetdone));
