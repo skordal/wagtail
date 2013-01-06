@@ -15,13 +15,13 @@ MKIMAGE ?= mkimage
 RM      ?= rm
 
 # Build flags:
-CXXFLAGS  += -O2 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon \
+KERNEL_CXXFLAGS  += -O2 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon \
 	-ffreestanding -Wa,-mcpu=cortex-a8+sec -Wall -mthumb \
 	-mno-thumb-interwork -fno-builtin -fno-rtti -fno-exceptions \
 	-falign-functions=4 -std=gnu++0x -fno-use-cxa-atexit
-LDFLAGS += -nostdlib
+KERNEL_LDFLAGS += -nostdlib
 
 # Build flags for Wagtail applications:
-APP_CXXFLAGS += $(CXXFLAGS)
-APP_LDFLAGS += $(LDFLAGS) -T ../application.ld ../start.o
+APP_CXXFLAGS += $(KERNEL_CXXFLAGS)
+APP_LDFLAGS += $(KERNEL_LDFLAGS) -T ../application.ld ../start.o
 

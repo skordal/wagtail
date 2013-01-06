@@ -43,7 +43,7 @@ OBJECT_FILES = $(ASSEMBLER_FILES:.S=.o) $(SOURCE_FILES:.cpp=.o)
 .PHONY: all clean
 
 all: $(OBJECT_FILES)
-	$(LD) $(LDFLAGS) -T wagtail.ld -o wagtail.elf -Map system.map $(OBJECT_FILES)
+	$(LD) $(KERNEL_LDFLAGS) -T wagtail.ld -o wagtail.elf -Map system.map $(OBJECT_FILES)
 	$(OBJCOPY) -S -x -O binary -j .text -j .data wagtail.elf wagtail.bin
 	$(GZIP) -c wagtail.bin > wagtail.bin.gz
 	$(MKIMAGE) -f wagtail.its wagtail.itb
@@ -53,9 +53,9 @@ clean:
 	-$(RM) wagtail.elf wagtail.bin wagtail.bin.gz wagtail.itb system.map
 
 %.o: %.S
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) -c $(KERNEL_CXXFLAGS) $< -o $@
 
 %.o: %.cpp %.h
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) -c $(KERNEL_CXXFLAGS) $< -o $@
 
 
