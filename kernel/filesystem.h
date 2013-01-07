@@ -23,10 +23,6 @@ namespace wagtail
 		static_assert(sizeof(unsigned long long) == 8, "unsigned long long must be 64 bytes long");
 
 		public:
-			// Initializes a filesystem instance for the specified
-			// partition. This method determines which filesystem driver
-			// to use and instantiates the correct type of object. If
-			// an error occurs, nullptr is returned.
 			/**
 			 * Initializes a filesystem for the specified partition. This method
 			 * can automatically determine which filesystem driver to use for a

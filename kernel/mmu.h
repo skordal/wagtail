@@ -6,6 +6,7 @@
 #define WAGTAIL_MMU_H
 
 #include "mm.h"
+#include "rbtree.h"
 
 namespace wagtail
 {
@@ -54,6 +55,13 @@ namespace wagtail
 			template<int entries> class translation_table
 			{
 				public:
+					/** Clears the translation table by zeroing all entries. */
+					void clear()
+					{
+						for(int i = 0; i < entries; ++i)
+							table[i] = 0;
+					}
+
 					/**
 					 * Maps an interval of memory in the translation table.
 					 * @param start physical start address of the interval.
@@ -63,7 +71,7 @@ namespace wagtail
 					 * @param type memory interval type.
 					 */
 					void map_interval(void * start, void * end, void * virtual_address,
-						permissions_t permissions, interval_type_t type)
+						permissions_t permissions, interval_type_t type, bool not_global = false)
 					{
 						unsigned int current_address = (unsigned int) start;
 						unsigned int current_virtual = (unsigned int) virtual_address;
@@ -73,7 +81,7 @@ namespace wagtail
 						{
 							map_page(reinterpret_cast<void *>(current_address),
 								reinterpret_cast<void *>(current_virtual),
-								permissions, type);
+								permissions, type, not_global);
 						}
 					}
 
@@ -87,9 +95,7 @@ namespace wagtail
 						unsigned int current_address = reinterpret_cast<unsigned int>(start);
 
 						for(; current_address < (unsigned int) end; current_address += 4096)
-						{
 							unmap_page((void *) current_address);
-						}
 					}
 
 					/**
@@ -100,20 +106,27 @@ namespace wagtail
 					 * @param type type of memory for the mapped memory.
 					 */
 					void map_page(void * page, void * virt, permissions_t permissions,
-						interval_type_t type)
+						interval_type_t type, bool not_global = false)
 					{
 						page_table * pt;
-						unsigned int table_index = (unsigned int)virt >> 20;
+						unsigned int table_index = (unsigned int) virt >> 20;
 
 						if(table[table_index] & l1::type_page_table)
-							pt = reinterpret_cast<page_table *>(table[table_index] & 0xfffffc00);
-						else  { // If no page table exists, allocate a new one and make a page table entry:
+						{
+							void * pt_physical, * pt_virtual = nullptr;
+							pt_physical = reinterpret_cast<void *>(table[table_index] & 0xfffffc00);
+							if(!directory.get_value(pt_physical, pt_virtual))
+								pt = (page_table *) pt_physical;
+							else
+								pt = (page_table *) pt_virtual;
+						} else  { // If no page table exists, allocate a new one and make a page table entry:
 							pt = new (1024) page_table;
-							table[table_index] = (unsigned int)pt | mmu::l1::type_page_table;
+							directory.insert(virtual_to_physical(pt), pt);
+							table[table_index] = (unsigned int) virtual_to_physical(pt) | mmu::l1::type_page_table;
 						}
 
 						unsigned int pt_index = ((unsigned int) virt & 0x000fffff) >> 12;
-						pt->add_entry(pt_index, page, permissions, type);
+						pt->add_entry(pt_index, page, permissions, type, not_global);
 					}
 
 					/**
@@ -123,11 +136,20 @@ namespace wagtail
 					void unmap_page(void * page)
 					{
 						unsigned int address = reinterpret_cast<unsigned int>(page);
+						void * pt_physical, * pt_virtual;
+						page_table * pt;
+
 						if(!(table[address >> 20] & l1::type_page_table))
 							return;
 
-						page_table * pt = reinterpret_cast<page_table *>(table[address >> 20] & 0xfffffc00);
+						pt_physical = (void *) (table[address >> 20] & 0xfffffc00);
+						if(!directory.get_value(pt_physical, pt_virtual))
+							pt = (void *) pt_physical;
+						else
+							pt = (void *) pt_virtual;
+
 						pt->remove_entry((address & 0x000fffff) >> 12);
+						mm::page_stack->push((void *) (address & 0x000fffff));
 
 						if(pt->is_empty())
 						{
@@ -137,6 +159,8 @@ namespace wagtail
 					}
 				private:
 					unsigned int table[entries] __attribute((aligned(4*entries)));
+					// Directory for doing physical->virtual translations for page tables:
+					rbtree<void *, void *> directory;
 			};
 
 			/** Kernel translation table type (4096 entries). */
@@ -202,6 +226,13 @@ namespace wagtail
 			static kernel_translation_table_t & get_kernel_table() { return kernel_translation_table; }
 
 			/**
+			 * Sets the current application translation table.
+			 * @param table the new application translation table to use.
+			 * @param pid the process ID of the process to switch to.
+			 */
+			static void set_application_table(application_translation_table_t * table, unsigned int pid);
+
+			/**
 			 * Converts the specified virtual address into a physical address.
 			 * This is done using MMU registers.
 			 * @param virt the virtual address to translate.
@@ -226,7 +257,7 @@ namespace wagtail
 					 * @param type memory interval type for the mapping.
 					 */
 					void add_entry(int offset, void * physical, permissions_t permissions,
-						interval_type_t type);
+						interval_type_t type, bool not_global = false);
 					/**
 					 * Removes a mapping from the table.
 					 * @param offset the offset into the table to remove the mapping from.
@@ -248,6 +279,9 @@ namespace wagtail
 
 			// The kernel memory translation table:
 			static kernel_translation_table_t kernel_translation_table;
+
+			// The ASID:
+			static char asid;
 	};
 }
 

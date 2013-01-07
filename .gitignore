@@ -1,3 +1,6 @@
+# Ignore the documentation files:
+documentation/
+
 # Ignore object files and executables:
 *.o
 system.map

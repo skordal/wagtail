@@ -38,6 +38,23 @@ irq_handler::irq_handler() : virtual_base(mmu::map_device((void *) 0x48200000, 4
 
 	io::write<int>(DEFAULT_THRESHOLD, virtual_base, registers::threshold::offset);
 	io::write<int>(registers::protection::enable, virtual_base, registers::protection::offset);
+
+	// Allocate an IRQ stack (4 Kb below the kernel stack):
+	void * irq_stack_virtual = reinterpret_cast<void *>(0xa0000000 - 0x8000 - 0x1000);
+	irq_stack = mm::allocate_page();
+	mmu::get_kernel_table().map_page(irq_stack, irq_stack_virtual, mmu::RW_NA, mmu::STACK);
+	kernel::message() << "\tIRQ stack: 4 Kb @ " << irq_stack << kstream::newline;
+
+	// Set up an IRQ stack right below the kernel stack:
+	void * stack_address = reinterpret_cast<void *>(0xa0000000 - 0x8000);
+	asm volatile(
+		"cps #0b10010\n\t" // Go to IRQ mode.
+		"mov sp, %[stack_address]\n\t" // Set the new stack address.
+		"cps #0b10011\n\t" // Go back to SVC mode.
+		:
+		: [stack_address] "r" (stack_address)
+		: "cc"
+	);
 }
 
 void irq_handler::register_handler(std::function<void(int)> handler, int number, int priority)

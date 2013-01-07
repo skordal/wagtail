@@ -16,7 +16,7 @@
 
 // Uncomment the following define to enable lots and lots of
 // debugging messages from the FAT32 driver:
-#define WAGTAIL_FS_FAT32_DEBUG
+//#define WAGTAIL_FS_FAT32_DEBUG
 
 namespace wagtail
 {

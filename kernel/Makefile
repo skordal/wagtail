@@ -18,6 +18,7 @@ SOURCE_FILES := \
 	filesystem.cpp \
 	filesystems/fat32.cpp \
 	filesystems/fat32_file.cpp \
+	io_operation.cpp \
 	irq_handler.cpp \
 	kernel.cpp \
 	kstream.cpp \
@@ -25,15 +26,19 @@ SOURCE_FILES := \
 	mm.cpp \
 	mmu.cpp \
 	partition.cpp \
+	process.cpp \
 	scm.cpp \
 	sd.cpp \
+	scheduler.cpp \
 	syscall.cpp \
+	translation_table.cpp \
 	uart.cpp \
 	utils.cpp \
 	vfs.cpp
 
 # Assembler source files to build:
 ASSEMBLER_FILES := \
+	context_switch.S \
 	interrupts.S \
 	start.S
 

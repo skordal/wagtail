@@ -10,6 +10,7 @@
 #include "kstream.h"
 #include "mm.h"
 #include "partition.h"
+#include "process.h"
 #include "scm.h"
 #include "sd.h"
 #include "syscall.h"

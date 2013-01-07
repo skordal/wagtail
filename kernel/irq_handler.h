@@ -65,7 +65,7 @@ namespace wagtail
 			irq_handler();
 			void handle_irq(int number);
 
-			void * virtual_base;
+			void * virtual_base, * irq_stack;
 			std::function<void(int)> irq_handlers[NUMBER_OF_IRQS];
 
 			static irq_handler * global_irq_handler;

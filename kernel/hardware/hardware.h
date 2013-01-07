@@ -18,7 +18,7 @@
 	struct name { static const unsigned int offset = register_offset;
 #define REGISTER_END() };
 
-// Defines the name of a bit in a 8-bit hardware register:
+// Defines the name of a bit in an 8-bit hardware register:
 #define BITNAME_8(name, num) \
 	static const unsigned char name = 1 << num;
 // Defines the name of a bit in a 16-bit hardware register:

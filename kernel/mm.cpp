@@ -288,6 +288,7 @@ void * operator new[](unsigned int size)
 	return mm::allocate(size);
 }
 
+// Operator for allocating aligned memory arrays:
 void * operator new[](unsigned int size, unsigned int alignment)
 {
 	return mm::allocate(size, alignment);

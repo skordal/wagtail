@@ -41,6 +41,13 @@ extern "C" void kernel::kernel_main()
 		panic();
 	}
 
+	kernel::message() << "Opening test application file..." << kstream::newline;
+	file * test_app_file = vfs::get()->open_file("/hello");
+	kernel::message() << "Creating test process..." << kstream::newline;
+	process * test_process = new process(test_app_file);
+
+	mm::print_debug_info(kernel::message());
+
 	kernel::message() << "Kernel halting." << kstream::newline;
 }
 

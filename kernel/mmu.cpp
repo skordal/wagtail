@@ -15,7 +15,10 @@ extern void * data_start, * data_end;
 void * mmu::next_device_addr = reinterpret_cast<void *>(0xc0000000);
 
 // Kernel page table:
-mmu::kernel_translation_table_t mmu::kernel_translation_table;
+mmu::kernel_translation_table_t __attribute((aligned(16*1024))) mmu::kernel_translation_table;
+
+// The next ASID:
+char mmu::asid = 0;
 
 // Initializes the MMU by setting up the kernel page table:
 extern "C" void mmu_init()
@@ -83,6 +86,37 @@ void * mmu::map_device(void * base, unsigned int size)
 	return retval;
 }
 
+void mmu::set_application_table(application_translation_table_t * table, unsigned int pid)
+{
+	void * table_physical = virtual_to_physical(table);
+	kernel::message() << "New application table @ " << (void *) table << " virtual, " << table_physical << " physical" << kstream::newline;
+
+	asm volatile(
+		// Set the TTBCR.PD0 to 1:
+		"mrc p15, 0, ip, c2, c0, 2\n\t"
+		"orr ip, #(1 << 4)\n\t"
+		"mrc p15, 0, ip, c2, c0, 2\n\t"
+		// Change the CONTEXTIDR:
+		"mov ip, %[pid], lsl #8\n\t"
+		"orr ip, %[asid]\n\t"
+		"mcr p15, 0, ip, c13, c0, 1\n\t"
+		// Change the TTBR0 register:
+		"orr ip, %[descriptor_table], #(0b10 << 3)|0b11\n\t"
+		"mcr p15, 0, ip, c2, c0, 0\n\t"
+		"isb\n\t"
+		// Change the TTBCR.PD0 back to 0:
+		"mrc p15, 0, ip, c2, c0, 2\n\t"
+		"mvn v1, #(1 << 4)\n\t"
+		"and ip, ip, v1\n\t"
+		"mcr p15, 0, ip, c2, c0, 2\n\t"
+		:
+		: [asid] "r" (asid), [pid] "r" (pid), [descriptor_table] "r" (table)
+		: "v1", "ip"
+	);
+
+	++asid;
+}
+
 void * mmu::virtual_to_physical(void * virt)
 {
 	unsigned int retval, offset = (unsigned int) virt & 0xfff;
@@ -116,9 +150,12 @@ mmu::page_table::page_table()
 }
 
 // Adds an entry to the page table:
-void mmu::page_table::add_entry(int offset, void * physical, permissions_t permissions, interval_type_t type)
+void mmu::page_table::add_entry(int offset, void * physical, permissions_t permissions, interval_type_t type, bool not_global)
 {
 	unsigned int entry = reinterpret_cast<unsigned int>(physical) | mmu::l2::type_small_page;
+
+	if(not_global)
+		entry |= l2::small_page::ng;
 
 	switch(type)
 	{
