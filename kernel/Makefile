@@ -31,7 +31,7 @@ SOURCE_FILES := \
 	sd.cpp \
 	scheduler.cpp \
 	syscall.cpp \
-	translation_table.cpp \
+	timer.cpp \
 	uart.cpp \
 	utils.cpp \
 	vfs.cpp
