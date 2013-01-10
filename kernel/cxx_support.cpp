@@ -15,3 +15,12 @@ extern "C" void __cxa_pure_virtual()
 	kernel::panic();
 }
 
+// Function required to use std::function objects without checking if they are nullptr:
+void std::__throw_bad_function_call()
+{
+	kernel::message() << kstream::newline
+		<< "*** FATAL ERROR: A callback function call failed! ***" << kstream::newline
+		<< "*** FATAL ERROR: This is most likely caused by calling a nullptr function pointer." << kstream::newline;
+	kernel::panic();
+}
+
