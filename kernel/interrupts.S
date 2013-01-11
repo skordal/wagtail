@@ -27,10 +27,12 @@ interrupt_handlers:
 	b.w int_fiq
 
 @ Undefined instruction handler:
+.balign 4
 int_undef:
 	movs pc, lr
 
 @ Supervisor call handler:
+.balign 4
 int_svc:
 	push {r0 - r3, ip, lr}
 
@@ -60,6 +62,7 @@ int_svc:
 	movs pc, lr
 
 @ Prefetch abort handler:
+.balign 4
 int_prefetch_abort:
 	sub lr, #4
 	srsdb sp!, #PROCESSOR_MODE_SVC
@@ -72,6 +75,7 @@ int_prefetch_abort:
 	rfeia sp!
 
 @ Data abort handler:
+.balign 4
 int_data_abort:
 	sub lr, #4
 	srsdb sp!, #PROCESSOR_MODE_SVC
@@ -84,22 +88,66 @@ int_data_abort:
 	rfeia sp!
 
 @ IRQ handler:
+.balign 4
 int_irq:
-	sub lr, #4
-	srsdb sp!, #PROCESSOR_MODE_SVC
-	cps #PROCESSOR_MODE_SVC
+	@ Set up the IRQ stack; sp is used as a scratch register throughout the
+	@ IRQ handler and store_context, so to actually use the stack, it must be
+	@ reset:
+	ldr sp, =irq_stack
+	ldr sp, [sp]
 
+	@ Store the user-mode contents of r0 so r0 can be used as a scratch register below:
+	push {r0}
+
+	@ Read the IRQ number to check if there should be a context switch:
+	ldr r0, =intc_base
+	ldr r0, [r0]
+	ldr r0, [r0, #0x40]
+	and r0, #0xff
+
+	@ Check for the timer0 IRQ, which is used for context switching:
+	cmp r0, #37
+	itt eq
+
+	@ Use r0 to convey the contents of the lr register to store_context; the
+	@ user-mode contents of r0 is pushed onto the stack earlier in this function.
+	moveq r0, lr
+
+	@ Execute a context switch; note that this call does not return back here,
+	@ it has its own exception return code:
+	blxeq switch_context
+
+	@ Restore r0 if not doing a context switch:
+	pop {r0}
+
+	@ Call the IRQ handler function:
 	push {r0 - r3, ip, lr}
 	bl handle_irq
 	pop {r0 - r3, ip, lr}
 
-	rfeia sp!
+	@ Return from the interrupt:
+	subs pc, lr, #4
 
-@ FIQ handler:
+@ FIQ handler, not used:
+.balign 4
 int_fiq:
 	sub lr, #4
 	srsdb sp!, #PROCESSOR_MODE_SVC
 	cps #PROCESSOR_MODE_SVC
 
 	rfeia sp!
+
+.section .bss
+
+@ IRQ stack:
+.global irq_stack
+.balign 4
+irq_stack:
+	.skip 4
+
+@ Virtual base address of the interrupt controller:
+.global intc_base
+.balign 4
+intc_base:
+	.skip 4
 

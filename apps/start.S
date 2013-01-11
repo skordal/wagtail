@@ -53,6 +53,7 @@ start:
 	b.n 1b
 
 2:
+	swi #1
 	@ As applications cannot quit yet, simply loop forever.
 	wfi
 	b.n 2b

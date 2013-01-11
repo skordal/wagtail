@@ -47,6 +47,12 @@ namespace wagtail
 
 			/** Stops the timer. */
 			void stop();
+
+			/**
+			 * Gets the IRQ number of the timer.
+			 * @return the IRQ number of the timer.
+			 */
+			int get_irq_num() const { return IRQ_BASE + module; }
 		private:
 			/** IRQ of the first timer module. */
 			static const int IRQ_BASE = 37;

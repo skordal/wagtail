@@ -16,7 +16,7 @@
 #define PROCESSOR_MODE_UND	0b11011
 #define PROCESSOR_MODE_SYS	0b11111
 
-// SCTLR bit names
+// SCTLR bit names:
 #define SCTLR_TE	(1 << 30)
 #define SCTLR_AFE	(1 << 29)
 #define SCTLR_TRE	(1 << 28)
@@ -38,6 +38,9 @@
 #define SCTLR_C		(1 <<  2)
 #define SCTLR_A		(1 <<  1)
 #define SCTLR_M		(1 <<  0)
+
+// PSR bit names (for SPSR and CPSR):
+#define PSR_T		(1 <<  5)
 
 #endif
 
