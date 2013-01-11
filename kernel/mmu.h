@@ -55,6 +55,8 @@ namespace wagtail
 			template<int entries> class translation_table
 			{
 				public:
+					translation_table() {}
+
 					/** Clears the translation table by zeroing all entries. */
 					void clear()
 					{
@@ -69,6 +71,8 @@ namespace wagtail
 					 * @param virtual_address the virtual address to start the mapping at.
 					 * @param permissions interval access permissions.
 					 * @param type memory interval type.
+					 * @param not_global specifies if the mapped memory is global or local to
+					 *                   the current translation table.
 					 */
 					void map_interval(void * start, void * end, void * virtual_address,
 						permissions_t permissions, interval_type_t type, bool not_global = false)
@@ -104,6 +108,8 @@ namespace wagtail
 					 * @param virt the virtual address to map the page to.
 					 * @param permissions access permissions for the page.
 					 * @param type type of memory for the mapped memory.
+					 * @param not_global specified whether the mapped memory is global or
+					 *                   not.
 					 */
 					void map_page(void * page, void * virt, permissions_t permissions,
 						interval_type_t type, bool not_global = false)

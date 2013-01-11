@@ -8,8 +8,8 @@
 #include <functional>
 
 /**
- * Syscall handler wrapper function. This method is called by the interrupt handler
- * in `interrupts.S`.
+ * Syscall handler function. This method is called by the interrupt handler
+ * in `interrupts.S`. 
  * @param syscall the syscall number.
  * @param arg1 the first syscall argument.
  * @param arg2 the second syscall argument.
