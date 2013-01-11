@@ -30,6 +30,8 @@ namespace wagtail
 			 * @todo Remove this constructor and replace it with something better.
 			 */
 			process(file * app_file);
+
+			/** Process destructor, returns allocated memory to the memory pool. */
 			~process();
 
 			/**

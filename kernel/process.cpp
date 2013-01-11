@@ -77,6 +77,12 @@ process::process(file * app_file)
 
 process::~process()
 {
+	// Unmap the code and data sections:
+	translation_table->unmap_interval((void *) 0x1000, program_break);
+
+	// Unmap the stack:
+	translation_table->unmap_interval((void *) (0x80000000U - DEFAULT_STACK_SIZE), (void *) 0x80000000);
+
 	delete translation_table;
 }
 
