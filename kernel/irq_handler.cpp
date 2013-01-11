@@ -11,6 +11,9 @@ using namespace wagtail::hardware::intc;
 // Virtual base address of the interrupt controller for use by FIQs in interrupts.S:
 extern void * intc_base;
 
+// Address of the top of the IRQ stack:
+extern void * irq_stack;
+
 irq_handler * irq_handler::global_irq_handler = nullptr;
 
 extern "C" void handle_irq()
@@ -32,6 +35,15 @@ irq_handler::irq_handler() : virtual_base(mmu::map_device((void *) 0x48200000, 4
 {
 	kernel::message() << "Initializing IRQ handler:" << kstream::newline;
 	intc_base = virtual_base;
+
+	// Allocate an IRQ stack (4Kb at 8 Kb below the kernel stack):
+	void * irq_stack_physical = mm::allocate_page();
+	void * irq_stack_virtual = reinterpret_cast<void *>(0xa0000000U - 0x8000 - 0x2000);
+	mmu::get_kernel_table().map_page(irq_stack_physical, irq_stack_virtual, mmu::RW_NA, mmu::STACK);
+	kernel::message() << "\tAllocated IRQ stack: 4 Kb @ " << irq_stack_virtual << kstream::newline;
+
+	// Set up the IRQ stack:
+	irq_stack = reinterpret_cast<void *>(0xa0000000U - 0x8000 - 0x1000);
 
 	int revision = io::read<int>(virtual_base, registers::revision::offset);
 	kernel::message() << "\tInterrupt controller version: "

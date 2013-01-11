@@ -8,7 +8,6 @@
 using namespace wagtail;
 
 extern register_contents * register_block;
-extern void * irq_stack;
 
 scheduler * scheduler::kernel_scheduler = nullptr;
 
@@ -22,15 +21,6 @@ scheduler::scheduler()
 {
 	kernel::message() << "Initializing scheduler:" << kstream::newline;
 	register_block = new register_contents;
-
-	// Allocate an IRQ stack (4Kb at 8 Kb below the kernel stack):
-	void * irq_stack_physical = mm::allocate_page();
-	void * irq_stack_virtual = reinterpret_cast<void *>(0xa0000000U - 0x8000 - 0x2000);
-	mmu::get_kernel_table().map_page(irq_stack_physical, irq_stack_virtual, mmu::RW_NA, mmu::STACK);
-	kernel::message() << "\tAllocated IRQ stack: 4 Kb @ " << irq_stack_virtual << kstream::newline;
-
-	// Set up an FIQ stack for handling the process switching interrupts:
-	irq_stack = reinterpret_cast<void *>(0xa0000000U - 0x8000 - 0x1000);
 
 	// Use timer0 for context switching at regular intervals:
 	timer::get(0).reserve();
