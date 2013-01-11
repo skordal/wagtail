@@ -6,11 +6,13 @@ DOXYFILE_ENCODING = UTF-8
 TAB_SIZE = 8
 
 PROJECT_NAME = "Wagtail OS"
-PROJECT_BRIEF = "A simple OS for the BeableBoard"
+PROJECT_BRIEF = "A simple OS for the BeagleBoard"
 
 GENERATE_HTML = YES
+GENERATE_LATEX = NO
+
 OUTPUT_DIRECTORY = docs
-HTML_OUTPUT = .
+HTML_OUTPUT = html-reference/
 
 INPUT = kernel
 INPUT_ENCODING = UTF-8
