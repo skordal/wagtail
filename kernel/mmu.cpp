@@ -89,7 +89,6 @@ void * mmu::map_device(void * base, unsigned int size)
 void mmu::set_application_table(application_translation_table_t * table, unsigned int pid)
 {
 	void * table_physical = virtual_to_physical(table);
-	kernel::message() << "New application table @ " << (void *) table << " virtual, " << table_physical << " physical" << kstream::newline;
 
 	asm volatile(
 		// Set the TTBCR.PD0 to 1:
@@ -110,7 +109,7 @@ void mmu::set_application_table(application_translation_table_t * table, unsigne
 		"and ip, ip, v1\n\t"
 		"mcr p15, 0, ip, c2, c0, 2\n\t"
 		:
-		: [asid] "r" (asid), [pid] "r" (pid), [descriptor_table] "r" (table)
+		: [asid] "r" (asid), [pid] "r" (pid), [descriptor_table] "r" (table_physical)
 		: "v1", "ip"
 	);
 
