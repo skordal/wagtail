@@ -220,9 +220,11 @@ void mmu::page_table::add_entry(int offset, void * physical, permissions_t permi
 }
 
 // Removes an entry from the page table:
-void mmu::page_table::remove_entry(int offset)
+void * mmu::page_table::remove_entry(int offset)
 {
+	void * retval = reinterpret_cast<void *>(table[offset] & 0xfffff000);
 	table[offset] = 0;
+	return retval;
 }
 
 // Checks if a page table is empty:

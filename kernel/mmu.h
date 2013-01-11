@@ -5,6 +5,7 @@
 #ifndef WAGTAIL_MMU_H
 #define WAGTAIL_MMU_H
 
+#include "kstream.h"
 #include "mm.h"
 #include "rbtree.h"
 
@@ -150,12 +151,13 @@ namespace wagtail
 
 						pt_physical = (void *) (table[address >> 20] & 0xfffffc00);
 						if(!directory.get_value(pt_physical, pt_virtual))
-							pt = (void *) pt_physical;
+							pt = reinterpret_cast<page_table *>(pt_physical);
 						else
-							pt = (void *) pt_virtual;
+							pt = reinterpret_cast<page_table *>(pt_virtual);
 
-						pt->remove_entry((address & 0x000fffff) >> 12);
-						mm::page_stack->push((void *) (address & 0x000fffff));
+						void * freed_page = pt->remove_entry((address & 0x000fffff) >> 12);
+						if(freed_page != nullptr)
+							mm::page_stack->push(freed_page);
 
 						if(pt->is_empty())
 						{
@@ -267,8 +269,9 @@ namespace wagtail
 					/**
 					 * Removes a mapping from the table.
 					 * @param offset the offset into the table to remove the mapping from.
+					 * @return the physical address of the page mapped to the specified entry.
 					 */
-					void remove_entry(int offset);
+					void * remove_entry(int offset);
 
 					/**
 					 * Checks if a page table is empty.
