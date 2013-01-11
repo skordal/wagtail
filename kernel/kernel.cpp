@@ -44,8 +44,6 @@ extern "C" void kernel::kernel_main()
 	// Initialize and start the scheduler:
 	scheduler::initialize();
 	scheduler::get()->start();
-
-	kernel::message() << "Kernel halting." << kstream::newline;
 }
 
 extern "C" void kernel::panic()

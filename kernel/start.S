@@ -80,7 +80,12 @@ run_global_constructors:
 2:
 
 start_kernel: @ Enter the C++ kernel:
-	bl kernel_main
+	b kernel_main
+
+@ Halts the kernel by disabling interrupts and running global static destructors:
+.global halt
+halt:
+	cpsid aif
 
 run_global_destructors:
 	ldr r0, =destructors_start
@@ -97,8 +102,7 @@ run_global_destructors:
 	b.n 1b
 2:
 
-loopy: @ TODO: halt or reboot here-abouts.
-	cpsid aif
+loopy:
 	wfi
 	b.n loopy
 

@@ -16,6 +16,8 @@
 #include "uart.h"
 #include "vfs.h"
 
+#include "kqueue.h"
+
 namespace wagtail
 {
 	/**
@@ -35,7 +37,10 @@ namespace wagtail
 		 * Kernel entry point. This method is called from assembly code located in
 		 * `start.S`.
 		 */
-		extern "C" void kernel_main();
+		extern "C" void kernel_main() __attribute((noreturn));
+
+		/** Halts the kernel. This method is actually located in `start.S`. */
+		extern "C" void halt() __attribute((noreturn));
 
 		/**
 		 * Kernel panic function, prints a short error message and hangs forever.

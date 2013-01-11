@@ -21,6 +21,13 @@ extern "C" void * handle_syscall(unsigned char syscall, void * arg1, void * arg2
 
 namespace wagtail
 {
+	/** Numbers of the various system calls. */
+	enum class syscall_number : unsigned char
+	{
+		/** `void exit(int code)` - terminates an application. */
+		exit = 1
+	};
+
 	/**
 	 * System call handler.
 	 */
@@ -43,17 +50,17 @@ namespace wagtail
 			 * @param number the system call number to use `handler` for.
 			 */
 			void register_handler(std::function<void *(void *, void *, void *)> handler,
-				unsigned char number);
+				syscall_number number);
 			/**
 			 * Removes a registered system call handler.
 			 * @param number the system call number to remove the handler from.
 			 */
-			void unregister_handler(int number);
+			void unregister_handler(syscall_number number);
 		private:
 			syscall_handler();
 
-			void * handle_syscall(unsigned char number, void * arg1, void * arg2, void * arg3);
-			void invalid_handler(unsigned char number);
+			void * handle_syscall(syscall_number number, void * arg1, void * arg2, void * arg3);
+			void invalid_handler(syscall_number number);
 
 			std::function<void *(void *, void *, void *)> handlers[256];
 

@@ -34,6 +34,11 @@ int_undef:
 @ Supervisor call handler:
 .balign 4
 int_svc:
+	@ Reset the SVC stack on SVC entry; this is to accomodate the exit syscall, which
+	@ does not return, and therefore does not cause all pushed values in this function
+	@ to be popped off the stack again:
+	ldr sp, =0xa0000000
+
 	push {r0 - r3, ip, lr}
 
 	@ Push the syscall arguments:
