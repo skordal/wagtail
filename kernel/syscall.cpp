@@ -12,7 +12,7 @@ syscall_handler * syscall_handler::global_syscall_handler = nullptr;
 void * handle_syscall(unsigned char syscall, void * arg1, void * arg2, void * arg3)
 {
 	kernel::message() << "Syscall: " << (int) syscall << kstream::newline;
-	return syscall_handler::get()->handle_syscall((syscall_number) syscall, arg1, arg2, arg3);
+	return syscall_handler::get()->handle_syscall(syscall, arg1, arg2, arg3);
 }
 
 void syscall_handler::initialize()
@@ -21,14 +21,14 @@ void syscall_handler::initialize()
 }
 
 void syscall_handler::register_handler(std::function<void *(void *, void *, void *)> handler,
-	syscall_number number)
+	unsigned char number)
 {
-	handlers[(unsigned char) number] = handler;
+	handlers[number] = handler;
 }
 
-void syscall_handler::unregister_handler(syscall_number number)
+void syscall_handler::unregister_handler(unsigned char number)
 {
-	handlers[(unsigned char) number] = nullptr;
+	handlers[number] = nullptr;
 }
 
 syscall_handler::syscall_handler()
@@ -37,17 +37,17 @@ syscall_handler::syscall_handler()
 		handlers[i] = nullptr;
 }
 
-void * syscall_handler::handle_syscall(syscall_number number, void * arg1, void * arg2, void * arg3)
+void * syscall_handler::handle_syscall(unsigned char number, void * arg1, void * arg2, void * arg3)
 {
-	if(handlers[(unsigned char) number] == nullptr)
+	if(handlers[number] == nullptr)
 	{
 		invalid_handler(number);
 		return (void *) 0;
 	} else
-		return handlers[(unsigned char) number](arg1, arg2, arg3);
+		return handlers[number](arg1, arg2, arg3);
 }
 
-void syscall_handler::invalid_handler(syscall_number number)
+void syscall_handler::invalid_handler(unsigned char number)
 {
 	kernel::message() << "Error: invalid syscall: " << (int) number << kstream::newline;
 }

@@ -6,6 +6,7 @@
 #define WAGTAIL_SYSCALL_H
 
 #include <functional>
+#include "syscalls.h"
 
 /**
  * Syscall handler function. This method is called by the interrupt handler
@@ -21,13 +22,6 @@ extern "C" void * handle_syscall(unsigned char syscall, void * arg1, void * arg2
 
 namespace wagtail
 {
-	/** Numbers of the various system calls. */
-	enum class syscall_number : unsigned char
-	{
-		/** `void exit(int code)` - terminates an application. */
-		exit = 1
-	};
-
 	/**
 	 * System call handler.
 	 */
@@ -50,17 +44,17 @@ namespace wagtail
 			 * @param number the system call number to use `handler` for.
 			 */
 			void register_handler(std::function<void *(void *, void *, void *)> handler,
-				syscall_number number);
+				unsigned char number);
 			/**
 			 * Removes a registered system call handler.
 			 * @param number the system call number to remove the handler from.
 			 */
-			void unregister_handler(syscall_number number);
+			void unregister_handler(unsigned char number);
 		private:
 			syscall_handler();
 
-			void * handle_syscall(syscall_number number, void * arg1, void * arg2, void * arg3);
-			void invalid_handler(syscall_number number);
+			void * handle_syscall(unsigned char number, void * arg1, void * arg2, void * arg3);
+			void invalid_handler(unsigned char number);
 
 			std::function<void *(void *, void *, void *)> handlers[256];
 

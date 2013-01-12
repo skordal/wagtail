@@ -43,7 +43,7 @@ scheduler::scheduler()
 
 	// Install the handler for the exit syscall:
 	syscall_handler::get()->register_handler(std::bind(&scheduler::syscall_exit, this,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), syscall_number::exit);
+		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), SYSCALL_EXIT);
 }
 
 void * scheduler::syscall_exit(void * retval, void * unused1, void * unused2)
