@@ -105,7 +105,12 @@ namespace wagtail
 				}
 			}
 
+			/**
+			 * Gets the queue length.
+			 * @return the length of the queue.
+			 */
 			unsigned int get_length() const { return length; }
+
 		private:
 			class node
 			{
@@ -123,7 +128,35 @@ namespace wagtail
 					T data;
 					node * next, * prev;
 			};
+		public:
+			/**
+			 * Iterator class, for use with ranged for loops.
+			 */
+			class iterator
+			{
+				friend class wagtail::kqueue<T>;
 
+				public:
+					bool operator==(const iterator & i) const { return n == i.n; }
+					bool operator!=(const iterator & i) const { return !(*this == i); }
+					const T & operator*() const { return n->get_data(); }
+					iterator & operator++() { n = n->get_next(); return *this; }
+				private:
+					node * n = nullptr;
+			};
+
+			/**
+			 * Gets an iterator pointing to the first element in the queue.
+			 * @return an iterator pointing to the first element in the queue.
+			 */
+			iterator begin() { iterator retval; retval.n = front; return retval; }
+			/**
+			 * Gets an iterator pointing to the element after the last element in the queue.
+			 * @return an iterator pointing at the element after the last element in the queue.
+			 */
+			iterator end() { iterator retval; return retval; }
+
+		private:
 			node * front = nullptr, * back = nullptr;
 			int length = 0;
 	};
