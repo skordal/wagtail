@@ -5,6 +5,7 @@
 .thumb
 
 #include "asm/processor.h"
+#include "asm/syscalls.h"
 
 @ Sets up interrupt handling by setting the VBAR register to the
 @ address of the interrupt handler table.
@@ -39,31 +40,35 @@ int_svc:
 	@ to be popped off the stack again:
 	ldr sp, =0xa0000000
 
-	push {r0 - r3, ip, lr}
+	@ Store the context, the fork syscall needs this:
+	push {lr}
+	blx store_context @ TODO: Do this only if neccessary.
+	pop {lr}
 
 	@ Push the syscall arguments:
 	push {r0 - r2}
 
 	@ Test if we were called from thumb code:
 	tst lr, #1
-
-	ittee eq
+	ite eq
 
 	@ Get the syscall number from a Thumb instruction:
 	ldrheq r0, [lr, #-2]
-	andeq r0, #0xff
 
 	@ Get the syscall number from an ARM instruction:
 	ldrne r0, [lr, #-4]
-	andne r0, #0x00ffffff
+
+	@ Only 0 - 255 are valid system call numbers:
+	and r0, #0x000000ff
 
 	@ Pop the syscall arguments:
 	pop {r1 - r3}
 
 	@ Call the syscall handler:
+	push {ip, lr}
 	bl handle_syscall
+	pop {ip, lr}
 
-	pop {r0 - r3, ip, lr}
 	movs pc, lr
 
 @ Prefetch abort handler:
@@ -101,7 +106,7 @@ int_irq:
 	ldr sp, =irq_stack
 	ldr sp, [sp]
 
-	@ Store the user-mode contents of r0 so r0 can be used as a scratch register below:
+	@ Store the contents of r0 so r0 can be used as a scratch register below:
 	push {r0}
 
 	@ Read the IRQ number to check if there should be a context switch:
@@ -112,18 +117,11 @@ int_irq:
 
 	@ Check for the timer0 IRQ, which is used for context switching:
 	cmp r0, #37
-	itt eq
-
-	@ Use r0 to convey the contents of the lr register to store_context; the
-	@ user-mode contents of r0 is pushed onto the stack earlier in this function.
-	moveq r0, lr
-
-	@ Execute a context switch; note that this call does not return back here,
-	@ it has its own exception return code:
-	blxeq switch_context
-
-	@ Restore r0 if not doing a context switch:
 	pop {r0}
+
+	@ If we are handling IRQ 37, execute a context switch:
+	it eq
+	ldreq pc, =switch_context
 
 	@ Call the IRQ handler function:
 	push {r0 - r3, ip, lr}

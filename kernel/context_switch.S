@@ -3,8 +3,7 @@
 @ Report bugs and issues on <http://github.com/skordal/wagtail>
 .syntax unified
 
-@ Note that these functions are coded in ARM mode! They must be called using
-@ the bx or blx instructions. Also note that they are run in IRQ mode.
+@ Note that these functions are ARM mode encoded!
 .arm
 
 #include "asm/processor.h"
@@ -14,62 +13,78 @@
 .balign 4
 switch_context:
 	@ Store the current context:
-	b store_context
+	push {lr}
+	bl store_context
+	pop {lr}
 
-1:	@ Run the IRQ handler, which takes care of setting up the pointer to the
+	@ Run the IRQ handler, which takes care of setting up the pointer to the
 	@ next application's register block and resetting the timer interrupt:
-	ldr sp, =irq_stack
-	ldr sp, [sp]
 	blx handle_irq
 
-	@ Restores a previously saved context and returns from the IRQ interrupt:
-	b restore_context
-
-@ Stores the registers for the current context:
-.global store_context
-.balign 4
-store_context:
-	push {r1}
-
-	@ Store the link register, temporarily stored in r0:
-	ldr r1, =register_block
-	ldr r1, [r1]
-	str r0, [r1, #16 * 4]
-
-	pop {r0 - r1}
-
-	ldr sp, =register_block
-	ldr sp, [sp]
-
-	@ Store the user registers:
-	stmia sp, {r0 - lr}^
-
-	@ Store the stored program status register:
-	add sp, #15 * 4
-	mrs r0, spsr
-	str r0, [sp]
-
-	b 1b
-
-@ Restores the registers for the current context:
-.global restore_context
-.balign 4
-restore_context:
-	ldr sp, =register_block
-	ldr sp, [sp]
-
-	@ Restore the user mode registers:
-	ldmia sp, {r0 - lr}^
-
-	@ Load the program status register:
-	ldr lr, [sp, #15 * 4]
-	msr spsr, lr
-
-	@ Load the IRQ return address:
-	ldr lr, [sp, #16 * 4]
+	@ Restore a previously saved context and return from the interrupt:
+	bl restore_context
 
 	@ Return from the interrupt:
 	subs pc, lr, #4
+
+@ Stores the current process context. The exception return address is passed
+@ on the stack.
+.global store_context
+.balign 4
+store_context:
+	push {r0, lr}
+
+	ldr lr, =register_block
+	ldr lr, [lr]
+	pld [lr]
+
+	@ Return if no register block is available:
+	cmp lr, #0
+	popeq {r0, pc}
+
+	@ Store user-mode registers:
+	stmia lr, {r0 - lr}^
+
+	@ Store the SPSR:
+	mrs r0, spsr
+	str r0, [lr, #15 * 4]
+
+	@ Store the exception return address:
+	mrs r0, cpsr
+	bfc r0, #6, #26
+	cmp r0, #PROCESSOR_MODE_SVC
+
+	ldr r0, [sp, #8]
+	addeq r0, r0, #4	@ If in SVC mode, add 4 to the return address.
+	str r0, [lr, #16 * 4]
+
+	pop {r0, pc}
+
+@ Restores the registers for the current context. The exception return
+@ address is passed through the lr register.
+.global restore_context
+.balign 4
+restore_context:
+	push {lr}
+
+	ldr lr, =register_block
+	ldr lr, [lr]
+
+	@ If no register block is available, panic:
+	cmp lr, #0
+	ldreq pc, =panic
+
+	@ Load the SPSR:
+	ldr r0, [lr, #15 * 4]
+	msr spsr, r0
+
+	@ Load the user-mode registers:
+	ldmia lr, {r0 - lr}^
+
+	@ Load the return address:
+	ldr lr, [lr, #16 * 4]
+
+	pop {pc}
 
 .section .bss
 
