@@ -6,24 +6,32 @@
 # tools and variables.
 include config.mk
 
-.PHONY: all apps clean docs kernel 
+.PHONY: all apps clean clean-docs docs kernel library
 
-all: kernel
+all: apps library kernel
 
 clean:
-	@make -C kernel clean
-	@make -C apps clean
+	@$(MAKE) -C kernel clean
+	@$(MAKE) -C apps clean
+	@$(MAKE) -C library clean
 
-apps:
-	@echo "Building applications..."
-	@make -C apps
+clean-docs:
+	@-$(RM) -r docs/html-reference
+
+apps: library
+	@$(ECHO) "Building applications..."
+	@$(MAKE) -C apps
 
 docs:
-	@echo "Building reference documentation..."
+	@$(ECHO) "Building reference documentation..."
 	@$(MKDIR) -p docs
 	@$(DOXYGEN)
 
 kernel:
-	@echo "Building kernel..."
-	@make -C kernel
+	@$(ECHO) "Building kernel..."
+	@$(MAKE) -C kernel
+
+library:
+	@$(ECHO) "Building C library..."
+	@$(MAKE) -C library
 

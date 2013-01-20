@@ -38,6 +38,8 @@ start:
 	movs r1, #0	@ argv
 	bl main
 
+	push {r0}
+
 	@ Run global destructors:
 	ldr r0, =destructors_start
 	ldr r1, =destructors_end
@@ -52,9 +54,10 @@ start:
 	adds r0, #4
 	b.n 1b
 
+	@ Call exit with the return code from main:
+	pop {r0}
+	svc 1
 2:
-	swi #1
-	@ As applications cannot quit yet, simply loop forever.
 	wfi
 	b.n 2b
 

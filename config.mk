@@ -4,16 +4,21 @@
 
 # Architecture dependent build tools:
 TOOL_PREFIX ?= arm-none-eabi-
-CXX          = $(TOOL_PREFIX)gcc
+CC           = $(TOOL_PREFIX)gcc
+CXX          = $(TOOL_PREFIX)g++
 LD           = $(TOOL_PREFIX)ld
 OBJCOPY      = $(TOOL_PREFIX)objcopy
 
 # Build utilities:
 DOXYGEN ?= doxygen
+ECHO    ?= echo
 GREP    ?= grep
 GZIP    ?= gzip
+LN      ?= ln
+MAKE    ?= make
 MKDIR   ?= mkdir
 MKIMAGE ?= mkimage
+TEST    ?= test
 RM      ?= rm
 
 # Build flags:
@@ -24,6 +29,20 @@ KERNEL_CXXFLAGS  += -O2 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon \
 KERNEL_LDFLAGS += -nostdlib
 
 # Build flags for Wagtail applications:
-APP_CXXFLAGS += $(KERNEL_CXXFLAGS)
-APP_LDFLAGS += $(KERNEL_LDFLAGS) -T ../application.ld ../start.o
+APP_CXXFLAGS += -O2 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon \
+	-nostdinc -Wall -mthumb -fno-builtin -fno-rtti -fno-exceptions \
+	-ffreestanding -std=gnu++0x -fno-use-cxa-atexit -mthumb-interwork \
+	-isystem ../../library/include/
+APP_CFLAGS += -O2 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon \
+	-nostdinc -Wall -mthumb -fno-builtin -std=gnu99 -mthumb-interwork \
+	-Werror=implicit-function-declaration -isystem ../../library/include/
+APP_LDFLAGS += $(KERNEL_LDFLAGS) -T ../application.ld ../start.o \
+	-L ../../library -Wl,--as-needed -lc
+
+# Build flags for the C library:
+LIBC_CFLAGS += -O2 -mthumb -mfpu=neon -mcpu=cortex-a8 -mtune=cortex-a8 \
+	-ffreestanding -Wa,-mcpu=cortex-a8+sec -Wall -mthumb \
+	-nostdinc -falign-functions=4 -std=gnu99 -mthumb-interwork \
+	-Werror=implicit-function-declaration -isystem include/
+LIBC_LDFLAGS += -nostdlib
 
