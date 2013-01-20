@@ -3,8 +3,11 @@ documentation/
 
 # Ignore object files and executables:
 *.o
+*.a
+*.elf
+
+# Ignore various built files:
 system.map
-wagtail.elf
 wagtail.itb
 wagtail.bin
 wagtail.bin.gz
