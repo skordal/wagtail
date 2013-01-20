@@ -34,7 +34,8 @@ SOURCE_FILES := \
 	timer.cpp \
 	uart.cpp \
 	utils.cpp \
-	vfs.cpp
+	vfs.cpp \
+	waitblock.cpp
 
 # Assembler source files to build:
 ASSEMBLER_FILES := \

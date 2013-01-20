@@ -56,8 +56,6 @@ namespace wagtail
 			template<int entries> class translation_table
 			{
 				public:
-					translation_table() {}
-
 					/** Clears the translation table by zeroing all entries. */
 					void clear()
 					{

@@ -15,12 +15,15 @@ namespace wagtail
 	 */
 	struct register_contents
 	{
+		register_contents();
+		register_contents(const register_contents & copy);
+
 		/** Registers r0 - r14. */
 		unsigned int r[15];
 		/** The CPSR of the process. */
-		unsigned int spsr = PSR_T|PROCESSOR_MODE_USR;
+		unsigned int spsr;
 		/** The IRQ handler return address, where to continue the process. */
-		unsigned int return_address = 0x1004;
+		unsigned int return_address;
 	} __attribute((packed));
 
 	/**
