@@ -110,7 +110,6 @@ namespace wagtail
 			 * @return the length of the queue.
 			 */
 			unsigned int get_length() const { return length; }
-
 		private:
 			class node
 			{
@@ -149,13 +148,36 @@ namespace wagtail
 			 * Gets an iterator pointing to the first element in the queue.
 			 * @return an iterator pointing to the first element in the queue.
 			 */
-			iterator begin() { iterator retval; retval.n = front; return retval; }
+			iterator begin() const { iterator retval; retval.n = front; return retval; }
 			/**
 			 * Gets an iterator pointing to the element after the last element in the queue.
 			 * @return an iterator pointing at the element after the last element in the queue.
 			 */
-			iterator end() { iterator retval; return retval; }
+			iterator end() const { iterator retval; return retval; }
 
+			/**
+			 * Removes the element pointed to by an iterator.
+			 * @param iter the iterator pointing to the element to remove.
+			 * @return an iterator pointing to the element after the removed element.
+			 */
+			iterator remove(const iterator & iter)
+			{
+				node * n = iter.n;
+
+				if(n->get_prev() != nullptr)
+					n->get_prev()->set_next(n->get_next());
+				if(n->get_next() != nullptr)
+					n->get_next()->set_prev(n->get_prev());
+
+				if(n == front)
+					front = n->get_next();
+				if(n == back)
+					back = n->get_prev();
+
+				iterator retval;
+				retval.n = n->get_next();
+				return retval;
+			}
 		private:
 			node * front = nullptr, * back = nullptr;
 			int length = 0;
