@@ -70,9 +70,9 @@ restore_context:
 	ldr lr, =register_block
 	ldr lr, [lr]
 
-	@ If no register block is available, panic:
+	@ If no register block is available, loop until the next interrupt:
 	cmp lr, #0
-	ldreq pc, =panic
+	beq restore_context_loop
 
 	@ Load the SPSR:
 	ldr r0, [lr, #15 * 4]
@@ -85,6 +85,12 @@ restore_context:
 	ldr lr, [lr, #16 * 4]
 
 	pop {pc}
+
+restore_context_loop:
+1:
+	cpsie if
+	wfi
+	b 1b
 
 .section .bss
 
