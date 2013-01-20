@@ -6,7 +6,7 @@
 #define WAGTAIL_SYSCALL_H
 
 #include <functional>
-#include "syscalls.h"
+#include "asm/syscalls.h"
 
 /**
  * Syscall handler function. This method is called by the interrupt handler

@@ -8,6 +8,8 @@
 // This file contains the numbers of the various system calls.
 
 #define SYSCALL_EXIT	1
+#define SYSCALL_FORK	2
+#define SYSCALL_WAIT	3
 
 #endif
 
