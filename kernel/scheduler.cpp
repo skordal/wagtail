@@ -52,25 +52,25 @@ scheduler::scheduler()
 	timer::get(0).reserve();
 
 	// Set up an initial processes:
-	kernel::message() << "Starting /sbin/init..." << kstream::newline;
+	kernel::message() << "Starting /proctest..." << kstream::newline;
 	file * init_file = vfs::get()->open_file("/proctest");
 	if(init_file == nullptr)
 	{
-		kernel::message() << "*** Could not find /sbin/init! ***" << kstream::newline;
+		kernel::message() << "*** Could not find /proctest! ***" << kstream::newline;
 		kernel::panic();
 	}
 
 	char * init_buffer = new char[init_file->get_size()];
 	if(!init_file->read(init_buffer, init_file->get_size()))
 	{
-		kernel::message() << "*** Could not read /sbin/init! ***" << kstream::newline;
+		kernel::message() << "*** Could not read /proctest! ***" << kstream::newline;
 		kernel::panic();
 	}
 
 	process * init_proc = new process(init_buffer);
 	if(!init_proc->is_usable())
 	{
-		kernel::message() << "*** Could not execute /sbin/init! ***" << kstream::newline;
+		kernel::message() << "*** Could not execute /proctest! ***" << kstream::newline;
 		kernel::panic();
 	}
 
