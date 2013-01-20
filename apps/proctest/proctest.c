@@ -16,10 +16,11 @@ int main(int argc, char * argv[])
 	{
 		for(int i = 0; i < 10; ++i)
 			asm volatile("nop\n\t");
-		exit(1);
+		exit(2);
 	} else {
 		int status;
 		waitpid(retval, &status, 0);
+		exit(1);
 	}
 
 	return 0;
