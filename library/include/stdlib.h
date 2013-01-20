@@ -5,6 +5,10 @@
 #ifndef __WAGTAIL_LIBC_STDLIB_H
 #define __WAGTAIL_LIBC_STDLIB_H
 
+#ifndef NULL
+#define NULL (void *) 0
+#endif
+
 /**
  * Terminates a process, calling `atexit` functions and flushing open streams.
  * @param status the application status code.
