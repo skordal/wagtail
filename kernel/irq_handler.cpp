@@ -2,7 +2,6 @@
 // (c) Kristian Klomsten Skordal 2012 <kristian.skordal@gmail.com>
 // Report bugs and issues on <http://github.com/skordal/wagtail>
 
-#include "kernel.h"
 #include "irq_handler.h"
 
 using namespace wagtail;
@@ -58,7 +57,6 @@ void irq_handler::register_handler(std::function<void(int)> handler, int number,
 	int bit = number & 0x1f;
 
 	irq_handlers[number] = handler;
-	kernel::message() << "IRQ(" << number << "): handler registered" << kstream::newline;
 
 	// Set the interrupt priority:
 	io::write<int>((priority << 2) & 0xfc, virtual_base, registers::ilr_base::offset + (number << 2));
