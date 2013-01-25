@@ -21,6 +21,12 @@ extern "C" void handle_irq();
 namespace wagtail
 {
 	/**
+	 * Initializes the IRQ handler. This method is called from the start code in
+	 * `start.S`.
+	 */
+	extern "C" void irq_init();
+
+	/**
 	 * IRQ handler class. This class facilitates registering and unregistering of IRQ handlers,
 	 * as well as calling these when an interrupt occurs.
 	 */

@@ -64,6 +64,9 @@ enable_neon: @ Enables access to the Neon and VFP co-processors:
 initialize_mm: @ Initializes the kernel memory manager:
 	bl mm_init
 
+initialize_irq: @ Initializes the IRQ handling code:
+	bl irq_init
+
 run_global_constructors:
 	ldr r0, =constructors_start
 	ldr r1, =constructors_end
