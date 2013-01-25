@@ -10,9 +10,33 @@
 namespace wagtail
 {
 	/**
+	 * Base class for streams.
+	 */
+	class kstream
+	{
+		public:
+			/** Newline constant. */
+			static const char * newline;
+
+			/**
+			 * Checks if the stream has errors or is usable.
+			 * @return `true` if the stream is usable, `false` otherwise.
+			 */
+			bool is_usable() const { return usable; }
+		protected:
+			/**
+			 * Sets whether the stream object is usable or not.
+			 * @param usable `true` if the stream is usable, `false` otherwise.
+			 */
+			void set_usable(bool usable = true) { this->usable = usable; }
+		private:
+			bool usable = true;
+	};
+
+	/**
 	 * Output stream class.
 	 */
-	class kostream
+	class kostream : public kstream
 	{
 		public:
 			/**
@@ -53,7 +77,7 @@ namespace wagtail
 	/**
 	 * Input stream class.
 	 */
-	class kistream
+	class kistream : public kstream
 	{
 		public:
 			/**
@@ -88,15 +112,6 @@ namespace wagtail
 		private:
 			char delim;
 	};
-
-	/**
-	 * Constants to use with kernel streams.
-	 */
-	namespace kstream
-	{
-		/** Newline constant. */
-		extern const char * newline;
-	}
 }
 
 #endif
