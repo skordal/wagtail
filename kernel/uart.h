@@ -5,8 +5,11 @@
 #ifndef WAGTAIL_UART_H
 #define WAGTAIL_UART_H
 
+#include <functional>
+
 #include "device.h"
 #include "io.h"
+#include "irq_handler.h"
 #include "mmu.h"
 
 #include "hardware/uart.h"
@@ -52,6 +55,15 @@ namespace wagtail
 			 */
 			unsigned int write(const char * buffer, unsigned int size, unsigned int flags = 0) override;
 		private:
+			/** Base of the UART IRQ numbers. */
+			static const int IRQ_BASE = 72;
+
+			/**
+			 * UART IRQ handler.
+			 * @param irq number of the IRQ that caused the handler to be called.
+			 */
+			void interrupt_handler(int irq);
+
 			/**
 			 * Constructs a UART driver object for the specified UART module.
 			 * @param module module number

@@ -54,11 +54,16 @@ uart::uart(int module, const char * device_name) : character_device(device_name)
 	io::write<char>(registers::sysc::autoidle|registers::sysc::idlemode(registers::sysc::smart),
 		uart_base[module], registers::sysc::offset);
 
+	// Enable sleep mode:
+	io::or_register(registers::efr::enhanced_en, uart_base[module], registers::efr::offset);
+	io::or_register(registers::ier::sleep_mode, uart_base[module], registers::ier::offset);
+	io::and_register(~registers::efr::enhanced_en, uart_base[module], registers::efr::offset);
+
 	// Switch to configuration mode A:
 	io::write<char>(0x80, uart_base[module], registers::lcr::offset);
 
 	// Enable the FIFOs:
-	io::write<char>(registers::fcr::fifo_en, uart_base[module], registers::fcr::offset);
+//	io::write<char>(registers::fcr::fifo_en, uart_base[module], registers::fcr::offset);
 
 	// Set the baud rate divisor for 115.2 kbps transfer rate:
 	io::write<char>(0x1a, uart_base[module], registers::dll::offset);
@@ -67,7 +72,32 @@ uart::uart(int module, const char * device_name) : character_device(device_name)
 	// Set the transmission format (returning to operational mode):
 	io::write<char>(0x3|registers::lcr::parity_en|registers::lcr::parity_type1, uart_base[module], registers::lcr::offset);
 
+	// Enable the IRQ handler:
+	irq_handler::get()->register_handler(std::bind(&uart::interrupt_handler, this, std::placeholders::_1),
+		IRQ_BASE + module);
+	// Enable the data received interrupt, to enable echoing input:
+	io::or_register(registers::ier::rhr_it, uart_base[module], registers::ier::offset);
+
 	// Enable UARTx16 mode:
 	io::write<char>(0, uart_base[module], registers::mdr1::offset);
+}
+
+void uart::interrupt_handler(int irq)
+{
+	char interrupt_source = (io::read<char>(uart_base[module], registers::iir::offset) >> 1) & 0x1f;
+
+	switch(interrupt_source)
+	{
+		case 2: // Character received:
+			while(((io::read<char>(uart_base[module], registers::iir::offset) >> 1) & 0x1f) == 2)
+				kernel::message() << io::read<char>(uart_base[module], registers::rhr::offset)
+					<< kstream::newline;
+			break;
+		case 6: // RX time-out, but seems to work as character received:
+			kernel::message() << io::read<char>(uart_base[module], registers::rhr::offset);
+			break;
+		default:
+			break;
+	}
 }
 

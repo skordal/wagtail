@@ -12,14 +12,25 @@ BEGIN_MODULE(uart)
 	REGISTER(rhr, 0x00)
 	REGISTER(dll, 0x00)
 	REGISTER(dlh, 0x04)
+	REGISTER(iir, 0x08)
 
-	REGISTER_BEGIN(lcr, 0x0c)
-		BITNAME_8(parity_en, 3)
-		BITNAME_8(parity_type1, 4)
+	REGISTER_BEGIN(ier, 0x04)
+		BITNAME_8(rhr_it, 0)
+		BITNAME_8(thr_it, 1)
+		BITNAME_8(sleep_mode, 4)
+	REGISTER_END()
+
+	REGISTER_BEGIN(efr, 0x08)
+		BITNAME_8(enhanced_en, 4)
 	REGISTER_END()
 
 	REGISTER_BEGIN(fcr, 0x08)
 		BITNAME_8(fifo_en, 0)
+	REGISTER_END()
+
+	REGISTER_BEGIN(lcr, 0x0c)
+		BITNAME_8(parity_en, 3)
+		BITNAME_8(parity_type1, 4)
 	REGISTER_END()
 
 	REGISTER_BEGIN(lsr, 0x14)
