@@ -170,9 +170,7 @@ void scheduler::interrupt()
 	{
 		timer::get(0).stop();
 		timer::get(0).release();
-#ifdef WAGTAIL_SCHEDULER_DEBUG
 		kernel::message() << "No processes left to run, halting kernel." << kstream::newline;
-#endif
 		kernel::halt();
 	} else {
 		current_process = next_process;
@@ -201,7 +199,6 @@ void scheduler::interrupt()
 #ifdef WAGTAIL_SCHEDULER_DEBUG
 		kernel::message() << "Scheduling process " << (int) current_process->get_pid() << " to run" << kstream::newline;
 #endif
-		kernel::message() << current_process->get_registers() << kstream::newline;
 	}
 }
 

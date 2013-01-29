@@ -17,7 +17,7 @@
 #include "waitblock.h"
 
 // Define the following to enable scheduler debugging messages to be printed:
-#define WAGTAIL_SCHEDULER_DEBUG
+//#define WAGTAIL_SCHEDULER_DEBUG
 
 namespace wagtail
 {
