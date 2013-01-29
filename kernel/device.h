@@ -69,7 +69,7 @@ namespace wagtail
 	 * Base class for character devices. Character devices are devices that work by reading
 	 * and/or writing a single character to or from a hardware unit at a time.
 	 */
-	class character_device : public device, public kostream, public kistream
+	class character_device : public device
 	{
 		public:
 			/**
@@ -78,6 +78,26 @@ namespace wagtail
 			 *             will be used in `/dev`.
 			 */
 			character_device(const kstring & name) : device(name) {}
+
+			/**
+			 * Reads a number of bytes from the character device.
+			 * @param buffer the destination buffer for the read operation.
+			 * @param size size of the data to read.
+			 * @param flags any flags needed for the transfer. How this field is
+			 *              interpreted is completely up to the individual drivers.
+			 * @return the number of bytes actually read.
+			 */
+			virtual unsigned int read(char * buffer, unsigned int size, unsigned int flags = 0) = 0;
+
+			/**
+			 * Writes a number of bytes to the character device.
+			 * @param buffer the source buffer for the write operation.
+			 * @param size the length of the data to write.
+			 * @param flags any flags needed for the transfer. How this field is
+			 *              interpreted is completely up to the individual drivers.
+			 * @return the number of bytes actually written.
+			 */
+			virtual unsigned int write(const char * buffer, unsigned int size, unsigned int flags = 0) = 0;
 	};
 
 	/**

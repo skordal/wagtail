@@ -16,7 +16,7 @@ namespace wagtail
 	/**
 	 * UART device driver.
 	 */
-	class uart final : public character_device
+	class uart final : public character_device, public kostream
 	{
 		public:
 			/**
@@ -31,11 +31,26 @@ namespace wagtail
 			 * @param character the character to write.
 			 */
 			kostream & operator << (char character) override;
+
 			/**
-			 * Reads a character from the UART.
-			 * @param character a reference to the variable to store the read character in.
+			 * Reads data from the UART.
+			 * @warning This function is unimplemented at the moment. The UART is currently
+			 *          set to echo any input given to it.
+			 * @param buffer the destination buffer.
+			 * @param size the size of the data to read.
+			 * @param flags unused parameter.
+			 * @return the number of bytes actually read from the UART.
 			 */
-			kistream & operator >> (char & character) override;
+			unsigned int read(char * buffer, unsigned int size, unsigned int flags = 0) override { return 0; }
+
+			/**
+			 * Writes data to the UART.
+			 * @param buffer the source buffer.
+			 * @param size the size of the data to write.
+			 * @param flags unused parameter.
+			 * @return the number of bytes written to the UART.
+			 */
+			unsigned int write(const char * buffer, unsigned int size, unsigned int flags = 0) override;
 		private:
 			/**
 			 * Constructs a UART driver object for the specified UART module.

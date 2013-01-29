@@ -2,6 +2,7 @@
 // (c) Kristian Klomsten Skordal 2012 <kristian.skordal@gmail.com>
 // Report bugs and issues on <http://github.com/skordal/wagtail>
 
+#include "kernel.h"
 #include "uart.h"
 
 using namespace wagtail;
@@ -28,15 +29,15 @@ kostream & uart::operator << (char character)
 	// Wait for the UART to be ready to send:
 	while(io::read<char>(uart_base[module], registers::ssr::offset) & registers::ssr::tx_fifo_full);
 	io::write(character, uart_base[module], registers::thr::offset);
-	
+
 	return *this;
 }
 
-// Reads a character from a UART module:
-kistream & uart::operator >> (char & character)
+unsigned int uart::write(const char * buffer, unsigned int size, unsigned int flags)
 {
-	// TODO: Implement this in a FIFO friendly manner.
-	return *this;
+	for(unsigned int i = 0; i < size; ++i)
+		*this << buffer[i];
+	return size;
 }
 
 // Constructs a new UART module with the specified parameters:
