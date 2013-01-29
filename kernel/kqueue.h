@@ -15,6 +15,21 @@ namespace wagtail
 	template<typename T> class kqueue
 	{
 		public:
+			/** Queue destructor. */
+			virtual ~kqueue() { clear(); }
+
+			/** Clears the queue, removing all elements in it. */
+			void clear()
+			{
+				node * current_node = front;
+				while(current_node != nullptr)
+				{
+					node * temp = current_node;
+					current_node = temp->get_next();
+					delete temp;
+				}
+			}
+
 			/**
 			 * Pushes an element into the front of the queue.
 			 * @param data the data element.
