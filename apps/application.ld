@@ -11,9 +11,11 @@ SECTIONS
 		../header.o(.text)
 		*(.text*)
 		*(.gnu.linkonce.t*)
+
 		constructors_start = .;
 		*(.init_array)
 		constructors_end = .;
+
 		destructors_start = .;
 		*(.fini_array)
 		destructors_end = .;

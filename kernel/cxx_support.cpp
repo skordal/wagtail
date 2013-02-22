@@ -23,7 +23,7 @@ extern "C" void * memcpy(void * dest, void * src, unsigned int n)
 	return dest;
 }
 
-// Functino required for setting memory in constructors:
+// Function required for setting memory in constructors:
 extern "C" void * memset(void * d, char c, unsigned int n)
 {
 	for(unsigned int i = 0; i < n; ++i)

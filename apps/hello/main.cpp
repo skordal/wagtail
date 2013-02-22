@@ -1,4 +1,4 @@
-// Makefile for the Wagtail OS
+// 
 // (c) Kristian Klomsten Skordal 2012 <kristian.skordal@gmail.com>
 // Report bugs and issues on <http://github.com/skordal/wagtail/issues>
 
