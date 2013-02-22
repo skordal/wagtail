@@ -11,9 +11,10 @@ system.map
 wagtail.itb
 wagtail.bin
 wagtail.bin.gz
+uImage
 
 # Ignore the reference documentation:
-docs/
+docs/html-reference
 
 # Ignore vim swap files:
 .*.swp
