@@ -239,6 +239,12 @@ namespace wagtail
 			static void set_application_table(application_translation_table_t * table, unsigned int pid);
 
 			/**
+			 * Gets the current application translation table.
+			 * @return a pointer to the current application translation table.
+			 */
+			static application_translation_table_t * get_application_table();
+
+			/**
 			 * Converts the specified virtual address into a physical address.
 			 * This is done using MMU registers.
 			 * @param virt the virtual address to translate.
@@ -286,6 +292,9 @@ namespace wagtail
 
 			// The kernel memory translation table:
 			static kernel_translation_table_t kernel_translation_table;
+
+			// The virtual address of the current application translation table:
+			static application_translation_table_t * current_application_table;
 
 			// The ASID:
 			static char asid;

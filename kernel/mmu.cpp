@@ -17,6 +17,9 @@ void * mmu::next_device_addr = reinterpret_cast<void *>(0xc0000000);
 // Kernel page table:
 mmu::kernel_translation_table_t __attribute((aligned(16*1024))) mmu::kernel_translation_table;
 
+// Current application page table:
+mmu::application_translation_table_t * mmu::current_application_table;
+
 // The next ASID:
 char mmu::asid = 0;
 
@@ -88,32 +91,50 @@ void * mmu::map_device(void * base, unsigned int size)
 
 void mmu::set_application_table(application_translation_table_t * table, unsigned int pid)
 {
-	void * table_physical = virtual_to_physical(table);
+	current_application_table = table;
 
-	asm volatile(
-		// Set the TTBCR.PD0 to 1:
-		"mrc p15, 0, ip, c2, c0, 2\n\t"
-		"orr ip, #(1 << 4)\n\t"
-		"mrc p15, 0, ip, c2, c0, 2\n\t"
-		// Change the CONTEXTIDR:
-		"mov ip, %[pid], lsl #8\n\t"
-		"orr ip, %[asid]\n\t"
-		"mcr p15, 0, ip, c13, c0, 1\n\t"
-		// Change the TTBR0 register:
-		"orr ip, %[descriptor_table], #(0b10 << 3)|0b11\n\t"
-		"mcr p15, 0, ip, c2, c0, 0\n\t"
-		"isb\n\t"
-		// Change the TTBCR.PD0 back to 0:
-		"mrc p15, 0, ip, c2, c0, 2\n\t"
-		"mvn v1, #(1 << 4)\n\t"
-		"and ip, ip, v1\n\t"
-		"mcr p15, 0, ip, c2, c0, 2\n\t"
-		:
-		: [asid] "r" (asid), [pid] "r" (pid), [descriptor_table] "r" (table_physical)
-		: "v1", "ip"
-	);
+	if(table != nullptr)
+	{
+		void * table_physical = virtual_to_physical(table);
 
-	++asid;
+		asm volatile(
+			// Set the TTBCR.PD0 to 1:
+			"mrc p15, 0, ip, c2, c0, 2\n\t"
+			"orr ip, #(1 << 4)\n\t"
+			"mcr p15, 0, ip, c2, c0, 2\n\t"
+			// Change the CONTEXTIDR:
+			"mov ip, %[pid], lsl #8\n\t"
+			"orr ip, %[asid]\n\t"
+			"mcr p15, 0, ip, c13, c0, 1\n\t"
+			// Change the TTBR0 register:
+			"orr ip, %[descriptor_table], #(0b10 << 3)|0b11\n\t"
+			"mcr p15, 0, ip, c2, c0, 0\n\t"
+			"isb\n\t"
+			// Change the TTBCR.PD0 back to 0:
+			"mrc p15, 0, ip, c2, c0, 2\n\t"
+			"mvn v1, #(1 << 4)\n\t"
+			"and ip, ip, v1\n\t"
+			"mcr p15, 0, ip, c2, c0, 2\n\t"
+			:
+			: [asid] "r" (asid), [pid] "r" (pid), [descriptor_table] "r" (table_physical)
+			: "v1", "ip"
+		);
+		++asid;
+	} else {
+		asm volatile(
+			// Only set the TTBCR.PD0 bit to 1:
+			"mrc p15, 0, ip, c2, c0, 2\n\t"
+			"orr ip, #(1 << 4)\n\t"
+			"mcr p15, 0, ip, c2, c0, 2\n\t"
+			::: "ip"
+		);
+	}
+
+}
+
+mmu::application_translation_table_t * mmu::get_application_table()
+{
+	return current_application_table;
 }
 
 void * mmu::virtual_to_physical(void * virt)
