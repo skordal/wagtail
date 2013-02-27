@@ -25,7 +25,7 @@ process::process(char * buffer) : process()
 	// Set the application stack pointer:
 	registers.r[13] = 0x80000000;
 
-	// Set the application as the current one:
+	// Set the application to the current one:
 	mmu::set_application_table(translation_table, pid);
 
 	// Copy the application data into the mapped address space:
@@ -46,17 +46,19 @@ process::~process()
 		listener->process_terminated(this);
 
 	// Unmap the code and data sections:
-	translation_table->unmap_interval((void *) 0x1000, program_break);
+	if(code_pages > 0)
+		translation_table->unmap_interval((void *) 0x1000, program_break);
 
 	// Unmap the stack:
-	translation_table->unmap_interval((void *) (0x80000000U - DEFAULT_STACK_SIZE), (void *) 0x80000000);
+	if(stack_pages > 0)
+		translation_table->unmap_interval((void *) (0x80000000U - DEFAULT_STACK_SIZE), (void *) 0x80000000);
 
 	delete translation_table;
 }
 
 process * process::fork()
 {
-	process * child = new process(this);
+/*	process * child = new process(this);
 	child->add_termination_listener(this);
 	children.push_front(child);
 
@@ -64,6 +66,7 @@ process * process::fork()
 	child->get_registers().r[0] = 0;
 
 	return child;
+*/
 }
 
 void process::add_termination_listener(termination_listener * listener)
@@ -88,7 +91,7 @@ void process::set_child_termination_listener(termination_listener * listener)
 	child_termination_listener = listener;
 }
 
-process::process() : termination_listener()
+process::process() : termination_listener(), code_pages(0), data_pages(0), stack_pages(0)
 {
 	translation_table = new (8192) mmu::translation_table<2048>();
 	translation_table->clear();
@@ -104,10 +107,6 @@ process::process() : termination_listener()
 process::process(process * parent) : process()
 {
 	this->parent = parent;
-
-	translation_table = new (8192) mmu::translation_table<2048>();
-	translation_table->clear();
-
 	registers = register_contents(parent->get_registers());
 
 	// Set up the address space for the process:
@@ -121,7 +120,7 @@ process::process(process * parent) : process()
 
 	unsigned int current_address = 0x1000U;
 
-	// Copy the .text and .data sections:
+	// Copy the .text and .data sections, very slowly:
 	for(unsigned int i = 0; i < code_pages + data_pages; ++i, current_address += 4096)
 	{
 		mmu::set_application_table(parent->get_translation_table(), parent->get_pid());
@@ -132,7 +131,7 @@ process::process(process * parent) : process()
 			*((volatile char *) (current_address + i)) = buffer[i];
 	}
 
-	// Copy the stack:
+	// Copy the stack, just as slowly:
 	current_address = 0x80000000U - (stack_pages * 4096);
 	for(unsigned int i = 0; i < stack_pages; ++i, current_address += 4096)
 	{

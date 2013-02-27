@@ -20,7 +20,7 @@ namespace wagtail
 	/**
 	 * Class representing a process.
 	 */
-	class process final : private termination_listener
+	class process : private termination_listener
 	{
 		friend class scheduler;
 
@@ -47,6 +47,11 @@ namespace wagtail
 			 * @return the stored register contents for this process.
 			 */
 			register_contents & get_registers() { return registers; }
+
+			/**
+			 * Sets the process's translation table as the current one.
+			 */
+			virtual void enable_addrspace() = 0;
 
 			/**
 			 * Gets the application translation table.
@@ -114,10 +119,12 @@ namespace wagtail
 			 * @return the number of children of the process.
 			 */
 			unsigned int get_num_children() const { return children.get_length(); }
-		private:
+		protected:
 			/** Common constructor. */
 			process();
 
+			bool usable = false;
+		private:
 			/** Constructor used when forking a process. */
 			process(process * parent);
 
@@ -149,7 +156,6 @@ namespace wagtail
 			void * program_break;
 			unsigned int pid;
 			mmu::translation_table<2048> * translation_table;
-			bool usable = false;
 			unsigned int exit_code = 0;
 
 			process * parent = nullptr;
@@ -162,7 +168,7 @@ namespace wagtail
 			register_contents registers;
 
 			// Numbers of allocated pages for the various process sections:
-			unsigned int code_pages, data_pages, stack_pages;
+			unsigned int code_pages = 0, data_pages = 0, stack_pages = 0;
 	};
 }
 

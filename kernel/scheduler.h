@@ -7,17 +7,15 @@
 
 #include <functional>
 
-#include "file.h"
 #include "kqueue.h"
 #include "process.h"
 #include "register_contents.h"
 #include "syscall.h"
 #include "timer.h"
-#include "vfs.h"
 #include "waitblock.h"
 
 // Define the following to enable scheduler debugging messages to be printed:
-//#define WAGTAIL_SCHEDULER_DEBUG
+// #define WAGTAIL_SCHEDULER_DEBUG
 
 namespace wagtail
 {
@@ -45,6 +43,12 @@ namespace wagtail
 			unsigned int allocate_pid();
 
 			/**
+			 * Schedules a process.
+			 * @param proc the process to schedule.
+			 */
+			void schedule(process * proc) { process_queue.push_back(proc); }
+
+			/**
 			 * Gets a process from the process queue.
 			 * @param pid the PID to search for.
 			 * @return the process corresponding to the PID.
@@ -56,8 +60,20 @@ namespace wagtail
 			 * @return the currently running process, or `nullptr` if none.
 			 */
 			process * get_current_process() const { return current_process; }
+
+			/**
+			 * Gets the scheduler queue length.
+			 * @return the length of the process queue.
+			 */
+			int get_queue_length() const { return process_queue.get_length(); }
 		private:
 			scheduler();
+
+			/**
+			 * Forces a scheduler interrupt.
+			 * @todo Make this function actually do something.
+			 */
+			void force_reschedule() __attribute((noreturn));
 
 			/**
 			 * Handler for the exit syscall. This system call terminates the currently running

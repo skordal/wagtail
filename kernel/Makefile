@@ -21,6 +21,7 @@ SOURCE_FILES := \
 	io_operation.cpp \
 	irq_handler.cpp \
 	kernel.cpp \
+	kthread.cpp \
 	kstream.cpp \
 	kstring.cpp \
 	mm.cpp \

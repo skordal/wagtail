@@ -17,15 +17,39 @@ extern "C" void kernel::kernel_main()
 	message() << "Welcome to Wagtail OS v" << version::major << '.' << version::minor
 		<< " :-)" << kstream::newline;
 
-	// Initialize the IRQ handler:
-	irq_handler::initialize();
-
 	// Initialize the syscall handler and set up the syscalls:
 	syscall_handler::initialize();
 
 	// Initialize the system control module:
 	scm::initialize();
 
+	// Initialize the scheduler:
+	scheduler::initialize();
+
+	// Start the initialization thread:
+	scheduler::get()->schedule(new kernel::init_thread);
+
+	// Start the scheduler:
+	scheduler::get()->start();
+
+	while(true) asm volatile("wfi\n\t");
+}
+
+extern "C" void kernel::panic()
+{
+	// Let's hope the message() function still works when panicing :-)
+	message() << kstream::newline;
+	message() << "*** KERNEL PANIC ***" << kstream::newline;
+	message() << "A fatal error occurred, and Wagtail cannot recover." << kstream::newline;
+	message() << "Reboot and try again." << kstream::newline << kstream::newline;
+
+	// Disable all interrupts and hang forever:
+	asm volatile("cpsid aif\n\t");
+	while(true) asm volatile("wfi\n\t");
+}
+
+int kernel::init_thread::run()
+{
 	// Initialize the SD card controller:
 	sd::initialize();
 
@@ -41,22 +65,7 @@ extern "C" void kernel::kernel_main()
 		panic();
 	}
 
-	// Initialize and start the scheduler:
-	scheduler::initialize();
-	scheduler::get()->start();
-}
-
-extern "C" void kernel::panic()
-{
-	// Let's hope the message() function still works when panicing :-)
-	message() << kstream::newline;
-	message() << "*** KERNEL PANIC ***" << kstream::newline;
-	message() << "A fatal error occurred, and Wagtail cannot recover." << kstream::newline;
-	message() << "Reboot and try again."
-		<< kstream::newline << kstream::newline;
-
-	// Disable all interrupts and hang forever:
-	asm volatile("cpsid aif\n\t");
-	while(true) asm volatile("wfi\n\t");
+	kernel::message() << "Kernel initialized!" << kstream::newline << kstream::newline;
+	return 0;
 }
 

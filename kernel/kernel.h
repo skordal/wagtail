@@ -6,9 +6,8 @@
 #define WAGTAIL_KERNEL_H
 
 #include "filesystem.h"
-#include "irq_handler.h"
 #include "kstream.h"
-#include "partition.h"
+#include "kthread.h"
 #include "scheduler.h"
 #include "scm.h"
 #include "sd.h"
@@ -16,12 +15,10 @@
 #include "uart.h"
 #include "vfs.h"
 
-#include "kqueue.h"
-
 namespace wagtail
 {
 	/**
-	 * Central kernel methods.
+	 * Core kernel functions.
 	 */
 	namespace kernel
 	{
@@ -34,18 +31,28 @@ namespace wagtail
 		kostream & message();
 
 		/**
-		 * Kernel entry point. This method is called from assembly code located in
+		 * Kernel entry point. This function is called from assembly code located in
 		 * `start.S`.
 		 */
 		extern "C" void kernel_main() __attribute((noreturn));
 
-		/** Halts the kernel. This method is actually located in `start.S`. */
+		/** Halts the kernel. This function is actually located in `start.S`. */
 		extern "C" void halt() __attribute((noreturn));
 
-		/**
-		 * Kernel panic function, prints a short error message and hangs forever.
-		 */
+		/** Kernel panic function, prints a short error message and hangs forever. */
 		extern "C" void panic() __attribute((noreturn));
+
+		/**
+		 * Thread that initializes the kernel. This thread is spawned at the end of
+		 * `kernel_main` to finish initializations that are dependant on the scheduler
+		 * being operative.
+		 */
+		class init_thread : public kthread
+		{
+			public:
+				init_thread() : kthread() {}
+				int run() override;
+		};
 
 		/**
 		 * Wagtail version numbers.

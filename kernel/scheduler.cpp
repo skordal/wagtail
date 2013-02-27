@@ -15,7 +15,7 @@ scheduler * scheduler::kernel_scheduler = nullptr;
 
 void scheduler::start()
 {
-	timer::get(0).start(std::bind(&scheduler::interrupt, this), timer::mode::repeating, 1000000);
+	timer::get(0).start(std::bind(&scheduler::interrupt, this), timer::mode::repeating, 10000);
 	while(true) asm volatile("wfi\n\t");
 }
 
@@ -51,35 +51,6 @@ scheduler::scheduler()
 	// Use timer0 for context switching at regular intervals:
 	timer::get(0).reserve();
 
-	// Set up an initial processes:
-	kernel::message() << "Starting /proctest..." << kstream::newline;
-	file * init_file = vfs::get()->open_file("/proctest");
-	if(init_file == nullptr)
-	{
-		kernel::message() << "*** Could not find /proctest! ***" << kstream::newline;
-		kernel::panic();
-	}
-
-	char * init_buffer = new char[init_file->get_size()];
-	if(!init_file->read(init_buffer, init_file->get_size()))
-	{
-		kernel::message() << "*** Could not read /proctest! ***" << kstream::newline;
-		kernel::panic();
-	}
-
-	process * init_proc = new process(init_buffer);
-	if(!init_proc->is_usable())
-	{
-		kernel::message() << "*** Could not execute /proctest! ***" << kstream::newline;
-		kernel::panic();
-	}
-
-	// Schedule the first process:
-	process_queue.push_front(init_proc);
-
-	// Clean up:
-	delete[] init_buffer;
-
 	// Install the handler for the exit syscall:
 	syscall_handler::get()->register_handler(std::bind(&scheduler::syscall_exit, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), SYSCALL_EXIT);
@@ -89,6 +60,12 @@ scheduler::scheduler()
 	// Install the handler for the wait syscall:
 	syscall_handler::get()->register_handler(std::bind(&scheduler::syscall_wait, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), SYSCALL_WAIT);
+}
+
+void scheduler::force_reschedule()
+{
+	// TODO: Cause a scheduler interrupt and reset the timer.
+	while(true) asm volatile("cpsie if\n\twfi\n\t");
 }
 
 void * scheduler::syscall_exit(void * retval, void * unused1, void * unused2)
@@ -105,8 +82,7 @@ void * scheduler::syscall_exit(void * retval, void * unused1, void * unused2)
 	current_process = nullptr;
 	register_block = nullptr;
 
-	// Wait for the next context switch:
-	while(true) asm volatile("cpsie if\n\twfi\n\t");
+	force_reschedule();
 }
 
 void * scheduler::syscall_fork(void * unused1, void * unused2, void * unused3)
@@ -152,8 +128,7 @@ void * scheduler::syscall_wait(void * pid, void * status_loc, void * unused1)
 	current_process = nullptr;
 	register_block = nullptr;
 
-	// Wait for the next context switch:
-	while(true) asm volatile("cpsie if\n\twfi\n\t");
+	force_reschedule();
 }
 
 void scheduler::interrupt()
@@ -174,7 +149,9 @@ void scheduler::interrupt()
 		kernel::halt();
 	} else {
 		current_process = next_process;
-		mmu::set_application_table(current_process->get_translation_table(), current_process->get_pid());
+
+		// Switch translation tables:
+		current_process->enable_addrspace();
 
 		if(current_process->is_blocking())
 		{
