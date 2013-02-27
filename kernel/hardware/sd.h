@@ -64,8 +64,9 @@ BEGIN_MODULE(sd)
 	REGISTER(data, 0x120)
 
 	REGISTER_BEGIN(pstate, 0x124)
-		BITNAME(dati,	1)
-		BITNAME(cmdi,	0)
+		BITNAME(bre,	11)
+		BITNAME(dati,	 1)
+		BITNAME(cmdi,	 0)
 	REGISTER_END()
 
 	REGISTER_BEGIN(hctl, 0x128)
