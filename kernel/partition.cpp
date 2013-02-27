@@ -14,56 +14,14 @@ partition::partition(block_device * device, block_address_t start_addr, block_ad
 	kernel::message() << "Partition registered: " << get_name() << kstream::newline;
 }
 
-// FIXME: The I/O methods below assumes the block address fits within 32 bits. This is
-// FIXME: always the case on the Beagleboard, but block_address_t allows 64 bit addresses,
-// FIXME: so this should be fixed some time.
-
-bool partition::read_block(void * buffer, block_address_t address)
+block_read_operation * partition::post_read(block_read_operation * op)
 {
-	if(address < start || address > end)
-	{
-		kernel::message() << get_name() << ": cannot read from address " << (void *) address
-			<< " it is outside the partition!" << kstream::newline;
-		return false;
-	}
-
-	return device->read_block(buffer, address);
+	return device->post_read(op);
 }
 
-bool partition::read_blocks(void * buffer, block_address_t address, int length)
+block_write_operation * partition::post_write(block_write_operation * op)
 {
-	if(address < start || address > end)
-	{
-		kernel::message() << get_name() << ": cannot read from address " << (void *) address
-			<< " it is outside the partition!" << kstream::newline;
-		return false;
-	}
-
-	return device->read_blocks(buffer, address, length);
-}
-
-bool partition::write_block(const void * buffer, block_address_t address)
-{
-	if(address < start || address > end)
-	{
-		kernel::message() << get_name() << ": cannot write to address " << (void *) address
-			<< " it is outside the partition!" << kstream::newline;
-		return false;
-	}
-
-	return device->write_block(buffer, address);
-}
-
-bool partition::write_blocks(const void * buffer, block_address_t address, int length)
-{
-	if(address < start || address > end)
-	{
-		kernel::message() << get_name() << ": cannot write to address " << (void *) address
-			<< " it is outside the partition!" << kstream::newline;
-		return false;
-	}
-
-	return device->write_blocks(buffer, address, length);
+	return device->post_write(op);
 }
 
 kstring partition::partname(const kstring & basename, int partnum)

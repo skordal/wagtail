@@ -16,7 +16,7 @@ namespace wagtail
 	 * It also works as a wrapper for the block device itself, where reads and
 	 * writes are bounded to the partition limits.
 	 */
-	class partition : public block_device
+	class partition final : public block_device
 	{
 		public:
 			/** Partition type signifying that the filesystem type should be automatically detected. */
@@ -35,10 +35,8 @@ namespace wagtail
 			/** Destructs a partition object. */
 			virtual ~partition() {}
 
-			bool read_block(void * buffer, block_address_t address) override;
-			bool read_blocks(void * buffer, block_address_t address, int length) override;
-			bool write_block(const void * buffer, block_address_t address) override;
-			bool write_blocks(const void * buffer, block_address_t address, int length) override;
+			block_read_operation * post_read(block_read_operation * read_op) override;
+			block_write_operation * post_write(block_write_operation * write_op) override;
 
 			/**
 			 * Gets the start address of the partition.

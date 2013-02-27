@@ -15,55 +15,23 @@ void sd::initialize()
 	sd_module = new sd;
 }
 
-bool sd::read_block(void * buffer, block_address_t address)
+block_read_operation * sd::post_read(block_read_operation * read_op)
 {
-	// Wait for the data line to be ready:
-	while(io::read<int>(virtual_base, registers::pstate::offset) & registers::pstate::dati);
-
+	read_op->set_status(io_operation::status::queued);
+	read_queue.push_back(read_op);
 #ifdef WAGTAIL_SD_DEBUG
-	kernel::message() << get_name() << ": CMD17" << kstream::newline;
+	kernel::message() << get_name() << ": operation queued: " << *read_op << kstream::newline;
 #endif
 
-	io::write(0xffffff, virtual_base, registers::stat::offset);
-	io::write(registers::ie::cc|registers::ie::tc|registers::ie::cto|registers::ie::brr|
-		registers::ie::dcrc|registers::ie::deb|registers::ie::dto,
-		virtual_base, registers::ie::offset);
-
-	io::write(static_cast<int>(address), virtual_base, registers::arg::offset);
-	io::write(17 << registers::cmd::indx|0x2 << registers::cmd::rsp_type|registers::cmd::dp|
-		registers::cmd::ccce|registers::cmd::ddir, virtual_base, registers::cmd::offset);
-
-	sd_status status = wait_for_status();
-
-	if(status != sd_status::command_complete)
-	{
-		kernel::message() << get_error_message(status) << kstream::newline;
-		return false;
-	}
-
-	// Read the data:
-#ifdef WAGTAIL_SD_DEBUG
-	kernel::message() << get_name() << ": CMD17: receiving data... ";
-#endif
-	while(!(io::read<int>(virtual_base, registers::stat::offset) & registers::stat::brr));
-	for(int i = 0; i < 128; ++i)
-		((int *) buffer)[i] = io::read<int>(virtual_base, registers::data::offset);
-	io::or_register(registers::stat::brr, virtual_base, registers::stat::offset);
-
-	// FIXME: We assume the transaction will complete and just wait for the TC flag to be set.
-	while(!(io::read<int>(virtual_base, registers::stat::offset) & registers::stat::tc));
-#ifdef WAGTAIL_SD_DEBUG
-	kernel::message() << "ok" << kstream::newline;
-#endif
-	return true;
+	if(active_read == nullptr)
+		initiate_next_read();
+	return read_op;
 }
 
-bool sd::write_block(const void * buffer, block_address_t address)
+block_write_operation * sd::post_write(block_write_operation * write_op)
 {
-	// Wait for the data line to be ready:
-	while(io::read<int>(virtual_base, registers::pstate::offset) & registers::pstate::dati);
-	// TODO: Write me
-	return false;
+	write_op->complete(io_operation::status::failed);
+	return write_op;
 }
 
 sd::sd() : block_device(512, "sd0"), virtual_base(mmu::map_device(sd::BASE_ADDRESS, 4096))
@@ -100,6 +68,9 @@ sd::sd() : block_device(512, "sd0"), virtual_base(mmu::map_device(sd::BASE_ADDRE
 
 	// Set the block length register:
 	io::write<int>(0x200, virtual_base, registers::blk::offset);
+
+	// Set the module IRQ handler:
+	irq_handler::get()->register_handler(std::bind(&sd::irq_handler, this, std::placeholders::_1), 83);
 
 	// TODO: handle checking for card present and ejecting and inserting cards.
 	initialize_card();
@@ -153,20 +124,29 @@ void sd::initialize_card()
 	if(!send_cmd7())
 		return;
 
-	card_initialized = true;
-
 	// Change to 4-bit mode if ACMD6 is successful:
 	if(send_acmd6())
 		io::or_register(registers::hctl::dtw, virtual_base, registers::hctl::offset);
 
+	// Clear all status flags before enabling the interrupts:
+	io::write(0xffffffff, virtual_base, registers::stat::offset);
+	// Enable SD card interrupts:
+	io::write(0xffffffff, virtual_base, registers::ise::offset);
+
+	// Read the partition table to finish the initialization:
 	read_partition_table();
 }
 
 void sd::read_partition_table()
 {
-	// Read the card's MBR:
+	// Read the card's MBR from the first block of the card:
 	char * buffer = new char[512];
-	read_block(buffer, 0);
+	block_read_operation * mbr_read = new block_read_operation(buffer, 1, 0);
+	post_read(mbr_read);
+
+	// Wait until the read completes:
+	kthread::wait_for_io(mbr_read);
+	delete mbr_read;
 
 	for(int i = 0; i < 4; ++i)
 	{
@@ -416,6 +396,22 @@ int sd::send_acmd41()
 	return io::read<int>(virtual_base, registers::rsp10::offset);
 }
 
+void sd::send_cmd17(block_address_t address)
+{
+#ifdef WAGTAIL_SD_DEBUG
+	kernel::message() << get_name() << ": CMD17" << kstream::newline;
+#endif
+	// Set the enabled interrupts:
+	io::write(registers::ie::cc|registers::ie::tc|registers::ie::cto|registers::ie::brr|
+		registers::ie::dcrc|registers::ie::deb|registers::ie::dto,
+		virtual_base, registers::ie::offset);
+
+	// Send the command:
+	io::write(static_cast<unsigned int>(address), virtual_base, registers::arg::offset);
+	io::write(17 << registers::cmd::indx|0x2 << registers::cmd::rsp_type|registers::cmd::dp|
+		registers::cmd::ccce|registers::cmd::ddir, virtual_base, registers::cmd::offset);
+}
+
 sd::sd_status sd::wait_for_status()
 {
 	int status;
@@ -456,5 +452,82 @@ const char * sd::get_error_message(sd::sd_status status) const
 		default:
 			return "unknown error";
 	}
+}
+
+void sd::initiate_read(block_read_operation * read_op)
+{
+	read_op->set_status(io_operation::status::incomplete);
+	active_read = read_op;
+	read_attempts = 0;
+
+	send_cmd17(read_op->get_address());
+}
+
+void sd::irq_handler(int irq)
+{
+	if(irq != 83)
+		return;
+
+	// If no read is active, ignore the interrupt and clear all status flags:
+	if(active_read == nullptr)
+	{
+#ifdef WAGTAIL_SD_DEBUG
+		kernel::message() << get_name() << ": warning: SD interrupt handler called with no active operation!"
+			<< " [status = " << io::read<void *>(virtual_base, registers::stat::offset) << "]"
+			<< kstream::newline;
+#endif
+		io::write(0xffffffff, virtual_base, registers::stat::offset);
+	} else {
+		unsigned int status = io::read<unsigned int>(virtual_base, registers::stat::offset);
+#ifdef WAGTAIL_SD_DEBUG
+		kernel::message() << get_name() << ": SD interrupt, status register = " << (void *) status << kstream::newline;
+#endif
+		if(status & registers::stat::brr)
+		{
+#ifdef WAGTAIL_SD_DEBUG
+			kernel::message() << get_name() << ": reading data... ";
+#endif
+			for(int i = 0; io::read<int>(virtual_base, registers::pstate::offset) & registers::pstate::bre; ++i)
+			{
+				unsigned int * buffer = static_cast<unsigned int *>(active_read->get_destination());
+				buffer[i + active_read->get_blocks_read() * get_block_size()] =
+					io::read<unsigned int>(virtual_base, registers::data::offset);
+			}
+#ifdef WAGTAIL_SD_DEBUG
+			kernel::message() << "ok" << kstream::newline;
+#endif
+			active_read->add_blocks_read(1);
+			io::write(registers::stat::brr, virtual_base, registers::stat::offset);
+		} else if(status & registers::stat::tc)
+		{
+#ifdef WAGTAIL_SD_DEBUG
+			kernel::message() << get_name() << ": transfer complete!" << kstream::newline;
+#endif
+			if(active_read->get_blocks_read() < active_read->get_blocks())
+			{
+				send_cmd17(active_read->get_address() + active_read->get_blocks_read());
+				io::write(registers::stat::tc, virtual_base, registers::stat::offset);
+			} else {
+				active_read->complete(io_operation::status::successful);
+				active_read = nullptr;
+				io::write(registers::stat::tc, virtual_base, registers::stat::offset);
+				initiate_next_read();
+			}
+
+		} else if(status & registers::stat::cc)
+		{
+#ifdef WAGTAIL_SD_DEBUG
+			kernel::message() << get_name() << ": command complete!" << kstream::newline;
+#endif
+			io::write(registers::stat::cc, virtual_base, registers::stat::offset);
+		}
+	}
+}
+
+void sd::initiate_next_read()
+{
+	block_read_operation * next = nullptr;
+	if(read_queue.pop_front(next))
+		initiate_read(next);
 }
 

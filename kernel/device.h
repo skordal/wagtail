@@ -6,7 +6,7 @@
 #define WAGTAIL_DEVICE_H
 
 #include "device_mgr.h"
-#include "kstream.h"
+#include "io_operation.h"
 
 namespace wagtail
 {
@@ -124,36 +124,24 @@ namespace wagtail
 			 */
 			virtual unsigned int get_block_size() const { return block_size; }
 
-			/**
-			 * Reads a block from the device.
-			 * @param buffer the target buffer.
-			 * @param address the address to read from.
-			 * @return `true` if successful, `false` otherwise.
-			 */
-			virtual bool read_block(void * buffer, block_address_t address) = 0;
-			/**
-			 * Reads several sequential blocks from the device.
-			 * @param buffer the target buffer.
-			 * @param address the address to read from.
-			 * @param length the number of blocks to read.
-			 * @return `true` if successful, `false` otherwise.
-			 */
-			virtual bool read_blocks(void * buffer, block_address_t address, int length);
+			/** Reads a block from a device. Deprecated in favour of `post_read`. */
+			bool read_block(void * buffer, block_address_t address) __attribute((deprecated));
+			/** Reads multiple blocks from a device. Deprecated in favour of `post_read`. */
+			bool read_blocks(void * buffer, block_address_t address, unsigned int length) __attribute((deprecated));
 
 			/**
-			 * Writes a block to the device.
-			 * @param buffer the buffer to read data from.
-			 * @param address the address to write the data to.
-			 * @return `true` if successul, `false` otherwise.
+			 * Posts a read operation to the device.
+			 * @param op the operation to enqueue.
+			 * @return the same read operation as in `op`.
 			 */
-			virtual bool write_block(const void * buffer, block_address_t address) = 0;
+			virtual block_read_operation * post_read(block_read_operation * op) = 0;
+
 			/**
-			 * Writes several sequential blocks to the device.
-			 * @param buffer the buffer to read data from.
-			 * @param address the address to write the data to.
-			 * @param length the number of blocks to write.
+			 * Posts a write operation to the device.
+			 * @param op the operation to enqueue.
+			 * @return the same write operation as in `op`.
 			 */
-			virtual bool write_blocks(const void * buffer, block_address_t address, int length);
+			virtual block_write_operation * post_write(block_write_operation * op) = 0;
 		private:
 			unsigned int block_size;
 	};

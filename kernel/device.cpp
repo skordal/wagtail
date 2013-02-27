@@ -3,36 +3,27 @@
 // Report bugs and issues on <http://github.com/skordal/wagtail>
 
 #include "device.h"
+#include "kthread.h"
 
 using namespace wagtail;
 
-// Reads a set of blocks from the block device:
-bool block_device::read_blocks(void * buffer, block_address_t base_address, int length)
+bool block_device::read_block(void * destination, block_address_t address)
 {
-	for(int i = 0; i < length; ++i)
-	{
-		if(!read_block(reinterpret_cast<void *>((unsigned int) buffer + (i * block_size)),
-			base_address + (i * block_size)))
-		{
-			return false;
-		}
-	}
+	block_read_operation * op = new block_read_operation(destination, 1, address);
+	post_read(op);
+	kthread::wait_for_io(op);
+	delete op;
 
-	return true;
+	return false;
 }
 
-// Writes a set of blocks to the block device:
-bool block_device::write_blocks(const void * buffer, block_address_t base_address, int length)
+bool block_device::read_blocks(void * destination, block_address_t address, unsigned int length)
 {
-	for(int i = 0; i < length; ++i)
-	{
-		if(!write_block(reinterpret_cast<void *>((unsigned int) buffer + (i * block_size)),
-			base_address + (i * block_size)))
-		{
-			return false;
-		}
-	}
+	block_read_operation * op = new block_read_operation(destination, length, address);
+	post_read(op);
+	kthread::wait_for_io(op);
+	delete op;
 
-	return true;
+	return false;
 }
 

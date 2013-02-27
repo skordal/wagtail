@@ -18,6 +18,7 @@ SOURCE_FILES := \
 	filesystem.cpp \
 	filesystems/fat32.cpp \
 	filesystems/fat32_file.cpp \
+	io_operation.cpp \
 	irq_handler.cpp \
 	kernel.cpp \
 	kstream.cpp \
