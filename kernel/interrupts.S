@@ -40,7 +40,7 @@ int_svc:
 	@ to be popped off the stack again:
 	ldr sp, =0xa0000000
 
-	@ Store the context, the fork syscall needs this:
+	@ Store the context, some system calls require this:
 	push {lr}
 	blx store_context @ TODO: Do this only if neccessary.
 	pop {lr}

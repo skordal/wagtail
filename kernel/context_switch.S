@@ -51,6 +51,8 @@ store_context:
 
 	@ Store the exception return address:
 	mrs r0, cpsr
+
+	@ Check which mode the processor is currently in:
 	bfc r0, #6, #26
 	cmp r0, #PROCESSOR_MODE_SVC
 
