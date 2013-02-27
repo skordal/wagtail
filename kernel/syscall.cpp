@@ -11,7 +11,6 @@ syscall_handler * syscall_handler::global_syscall_handler = nullptr;
 
 void * handle_syscall(unsigned char syscall, void * arg1, void * arg2, void * arg3)
 {
-	kernel::message() << "Syscall: " << (int) syscall << kstream::newline;
 	return syscall_handler::get()->handle_syscall(syscall, arg1, arg2, arg3);
 }
 
