@@ -8,10 +8,6 @@ WagtailOS is a simple operating system for the [BeagleBoard](http://www.beaglebo
 
 The goal of Wagtail is to be a simple operating system for the BeagleBoard, exploiting various features of C++11 (such as `std::function`, which works wonderfully for callback functions) in a way that benefits operating system development. Portability between compilers may be possible, but do not count on it.
 
-Wagtail currently has a working (though simple and inefficient) memory manager, can read FAT32 partitions on SD cards and it can run the `hello` application from the apps folder (which does nothing, except call SVC 1), and it can possibly fail horribly if said application is not located on the first partition of the SD card.
-
-The scheduler and process code is, however, very much a work in progress and is evolving quickly.
-
 How to build Wagtail
 --------------------
 
@@ -21,11 +17,9 @@ To build Wagtail, you need the following:
 * `doxygen` with C++11 support to build the source reference documentation
 * Standard utilities such as `grep`, `gzip` and file utilities
 
-To build, simply run `make`. Most build settings can be changed by editing the `config.mk` file in the top of the source tree.
+To build, simply run `make`. Most build settings can be changed by editing the `config.mk` file in the top of the source tree. The finished kernel image is named `wagtail.itb` and is located in the `kernel` directory. If you do not wish to use the new uBoot format, a regular `uImage` file is also created for your convenience.
 
-The finished kernel image is named `wagtail.itb` and is located in the `kernel` directory.
-
-Note that to boot Wagtail, you will need a uboot image on your Beagleboard that has been patched to enable the new FIT image format. This can easily be done by adding the following somewhere in `include/configs/omap3_beagle.h`:
+If you do choose to use the new image format to boot Wagtail, you will need a uboot image on your Beagleboard that has been patched to enable it. This can easily be done by adding the following somewhere in `include/configs/omap3_beagle.h`:
 
 ```C
 #define CONFIG_FIT
