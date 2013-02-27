@@ -19,7 +19,7 @@ filesystem * filesystem::initialize(partition * part, char type)
 	switch(type != partition::auto_type ? type : part->get_type())
 	{
 		case 0xc:
-			kernel::message() << part->get_name() << ": trying FAT driver" << kstream::newline;
+			kernel::message() << part->get_name() << ": trying FAT32 driver" << kstream::newline;
 			fs = new filesystems::fat32(part);
 			break;
 		default:
