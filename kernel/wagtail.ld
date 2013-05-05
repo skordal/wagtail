@@ -6,7 +6,7 @@ SECTIONS
 {
 	ramstart = 0x80000000;
 
-	.text 0x80008000 :
+	.text 0x81000000 :
 	{
 		text_start = .;
 		start.o(.text)

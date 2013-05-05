@@ -16,7 +16,7 @@ start:
 	cpsid aif, #PROCESSOR_MODE_SVC
 
 	@ Set up a temporary stack until the MMU is enabled:
-	ldr sp, =0x80008000
+	ldr sp, =0x81000000
 
 	@ Switch to thumb mode:
 	blx thumb_start
