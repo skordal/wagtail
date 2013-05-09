@@ -110,6 +110,10 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 {
 	unsigned int return_address = 0;
 
+	// Ignore requests for 0 bytes of memory:
+	if(size == 0)
+		return nullptr;
+
 	// Round the size up to a multiple of 4 to maintain alignment
 	// and prevent data aborts:
 	size += 3;
@@ -173,6 +177,9 @@ void * mm::allocate(unsigned int size, unsigned int alignment)
 // Frees a block of allocated memory:
 void mm::free(void * memory_block)
 {
+	if(memory_block == nullptr)
+		return;
+
 	block * current = reinterpret_cast<block *>((unsigned int) memory_block - sizeof(block));
 	current->set_used(false);
 
