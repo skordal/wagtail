@@ -48,9 +48,3 @@ void kthread::exit(int n)
 	while(true) asm volatile("wfi");
 }
 
-void kthread::yield()
-{
-	// FIXME: Implement a system call for this functionality.
-	asm volatile("wfi\n\t");
-}
-

@@ -58,9 +58,6 @@ namespace wagtail
 			 * @param n exit code.
 			 */
 			static void exit(int n) __attribute((noreturn));
-
-			/** Yields control to another thread. */
-			static void yield();
 		protected:
 			/** Constructs a kernel thread object. */
 			kthread(unsigned int stack_size = DEFAULT_STACK_SIZE);
