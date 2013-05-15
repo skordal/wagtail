@@ -3,11 +3,12 @@
 # Report bugs and issues on <http://github.com/skordal/wagtail/issues>
 
 # Architecture dependent build tools:
-TOOL_PREFIX ?= arm-none-eabi-
-CC           = $(TOOL_PREFIX)gcc
-CXX          = $(TOOL_PREFIX)g++
-LD           = $(TOOL_PREFIX)ld
-OBJCOPY      = $(TOOL_PREFIX)objcopy
+TOOL_PREFIX    ?= arm-none-eabi-
+TARGET_CC      := $(TOOL_PREFIX)gcc
+TARGET_CXX     := $(TOOL_PREFIX)g++
+TARGET_LD      := $(TOOL_PREFIX)ld
+TARGET_OBJCOPY := $(TOOL_PREFIX)objcopy
+TARGET_AR      := $(TOOL_PREFIX)ar
 
 # Build utilities:
 DOXYGEN ?= doxygen

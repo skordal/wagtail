@@ -9,14 +9,12 @@ include ../config.mk
 LIBC_CFLAGS += -isystem include/
 
 SOURCE_FILES := \
-	exit.c \
-	fork.c \
-	wait.c
+	exit.c 
 ASSEMBLER_FILES := 
 OBJECT_FILES = $(ASSEMBLER_FILES:.S=.o) $(SOURCE_FILES:.c=.o)
 
 all: prepare $(OBJECT_FILES)
-	$(AR) rcs libc.a $(OBJECT_FILES)
+	$(TARGET_AR) rcs libc.a $(OBJECT_FILES)
 
 clean:
 	-$(RM) $(OBJECT_FILES)
@@ -27,9 +25,9 @@ prepare:
 	$(TEST) -L include/wagtail/syscalls.h || $(LN) -s $(shell pwd)/../kernel/asm/syscalls.h include/wagtail/syscalls.h
 
 %.o: %.S
-	$(CC) -c $(LIBC_CFLAGS) $< -o $@
+	$(TARGET_CC) -c $(LIBC_CFLAGS) $< -o $@
 
 %.o: %.c
-	$(CC) -c $(LIBC_CFLAGS) $< -o $@
+	$(TARGET_CC) -c $(LIBC_CFLAGS) $< -o $@
 
 

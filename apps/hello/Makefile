@@ -6,8 +6,8 @@ include ../../config.mk
 .PHONY: all clean
 
 all: main.cpp
-	$(CXX) $(APP_CXXFLAGS) -o hello.elf main.cpp $(APP_LDFLAGS)
-	$(OBJCOPY) -S -O binary -j .text -j .data hello.elf hello
+	$(TARGET_CXX) $(APP_CXXFLAGS) -o hello.elf main.cpp $(APP_LDFLAGS)
+	$(TARGET_OBJCOPY) -S -O binary -j .text -j .data hello.elf hello
 
 clean:
 	-$(RM) hello.elf hello

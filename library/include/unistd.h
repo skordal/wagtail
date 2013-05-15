@@ -13,11 +13,5 @@
  */
 void __attribute((noreturn)) _exit(int status);
 
-/**
- * Forks a process.
- * @return the PID of the child process for the parent process and 0 for the child process.
- */
-pid_t fork();
-
 #endif
 
