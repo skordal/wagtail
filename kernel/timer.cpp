@@ -24,17 +24,17 @@ void * timer::timer_base[11] = {
 };
 
 timer timer::timer_modules[11] = {
-	timer(0, "timer0"),
-	timer(1, "timer1"),
-	timer(2, "timer2"),
-	timer(3, "timer3"),
-	timer(4, "timer4"),
-	timer(5, "timer5"),
-	timer(6, "timer6"),
-	timer(7, "timer7"),
-	timer(8, "timer8"),
-	timer(9, "timer9"),
-	timer(10, "timer10")
+	timer(0),
+	timer(1),
+	timer(2),
+	timer(3),
+	timer(4),
+	timer(5),
+	timer(6),
+	timer(7),
+	timer(8),
+	timer(9),
+	timer(10)
 };
 
 
@@ -93,7 +93,7 @@ void timer::stop()
 	interval = 0;
 }
 
-timer::timer(int n, const char * name) : device(name), module(n)
+timer::timer(int n) : module(n)
 {
 	// Reset the module:
 	io::write(registers::tiocp_cfg::softreset, timer_base[n], registers::tiocp_cfg::offset);

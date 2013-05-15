@@ -33,12 +33,6 @@ void kthread::enable_addrspace()
 	mmu::set_application_table(nullptr, 0);
 }
 
-void kthread::wait_for_io(io_operation * op)
-{
-	while(op->get_status() == io_operation::status::queued || op->get_status() == io_operation::status::incomplete)
-		asm volatile("wfi\n\t");
-}
-
 void kthread::exit(int n)
 {
 	asm volatile(

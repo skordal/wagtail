@@ -7,7 +7,6 @@
 
 #include <functional>
 
-#include "device.h"
 #include "io.h"
 #include "irq_handler.h"
 #include "mmu.h"
@@ -19,7 +18,7 @@ namespace wagtail
 	/**
 	 * Class representing a hardware timer.
 	 */
-	class timer final : public device
+	class timer final
 	{
 		public:
 			/** Possible timer modes. Disabled is the default state. */
@@ -60,9 +59,8 @@ namespace wagtail
 			/**
 			 * Sets up the timer driver for the specified module.
 			 * @param n the timer module number, in [0 .. 10].
-			 * @param name the name of the timer device node.
 			 */
-			timer(int n, const char * name);
+			timer(int n);
 
 			/**
 			 * Handles a timer IRQ.

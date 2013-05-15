@@ -12,10 +12,9 @@
 #include "register_contents.h"
 #include "syscall.h"
 #include "timer.h"
-#include "waitblock.h"
 
 // Define the following to enable scheduler debugging messages to be printed:
-// #define WAGTAIL_SCHEDULER_DEBUG
+#define WAGTAIL_SCHEDULER_DEBUG
 
 namespace wagtail
 {
@@ -70,12 +69,6 @@ namespace wagtail
 			scheduler();
 
 			/**
-			 * Forces a scheduler interrupt.
-			 * @todo Make this function actually do something.
-			 */
-			void force_reschedule() __attribute((noreturn));
-
-			/**
 			 * Handler for the exit syscall. This system call terminates the currently running
 			 * process and waits for the next context switch to run the next process.
 			 * @param retval application exit code.
@@ -84,25 +77,6 @@ namespace wagtail
 			 * @return nothing (`nullptr`).
 			 */
 			void * syscall_exit(void * retval, void * unused1, void * unused2) __attribute((noreturn));
-
-			/**
-			 * Handler for the fork syscall. This forks the currently running process.
-			 * @param unused1 unused system call parameter.
-			 * @param unused2 unused system call parameter.
-			 * @param unused3 unused system call parameter.
-			 * @return the PID of the child process for the parent, or 0 for the child process.
-			 */
-			void * syscall_fork(void * unused1, void * unused2, void * unused3);
-
-			/**
-			 * Handler for the wait syscall. This causes the current process to block until
-			 * the specified process has terminated. The exit code is then returned to the
-			 * process.
-			 * @param pid the PID of the process to wait for.
-			 * @param status_loc a memory location to write the status code to.
-			 * @param unused1 unused system call parameter.
-			 */
-			void * syscall_wait(void * pid, void * status_loc, void * unused1) __attribute((noreturn));
 
 			/**  Scheduler interrupt handler. */
 			void interrupt();

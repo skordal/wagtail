@@ -9,16 +9,7 @@ include ../config.mk
 # Source files to build:
 SOURCE_FILES := \
 	aborts.cpp \
-	clock_mgr.cpp \
 	cxx_support.cpp \
-	device.cpp \
-	device_mgr.cpp \
-	direntry.cpp \
-	file.cpp \
-	filesystem.cpp \
-	filesystems/fat32.cpp \
-	filesystems/fat32_file.cpp \
-	io_operation.cpp \
 	irq_handler.cpp \
 	kernel.cpp \
 	kthread.cpp \
@@ -26,18 +17,13 @@ SOURCE_FILES := \
 	kstring.cpp \
 	mm.cpp \
 	mmu.cpp \
-	partition.cpp \
 	process.cpp \
 	register_contents.cpp \
-	scm.cpp \
-	sd.cpp \
 	scheduler.cpp \
 	syscall.cpp \
 	timer.cpp \
 	uart.cpp \
-	utils.cpp \
-	vfs.cpp \
-	waitblock.cpp
+	utils.cpp
 
 # Assembler source files to build:
 ASSEMBLER_FILES := \

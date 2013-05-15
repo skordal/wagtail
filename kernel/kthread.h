@@ -48,12 +48,6 @@ namespace wagtail
 			virtual void enable_addrspace() override;
 
 			/**
-			 * Waits for the completion of an I/O operation.
-			 * @param op the operation to wait for.
-			 */
-			static void wait_for_io(io_operation * op);
-
-			/**
 			 * Exits the kernel thread.
 			 * @param n exit code.
 			 */

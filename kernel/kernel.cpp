@@ -20,9 +20,6 @@ extern "C" void kernel::kernel_main()
 	// Initialize the syscall handler and set up the syscalls:
 	syscall_handler::initialize();
 
-	// Initialize the system control module:
-	scm::initialize();
-
 	// Initialize the scheduler:
 	scheduler::initialize();
 
@@ -50,20 +47,7 @@ extern "C" void kernel::panic()
 
 int kernel::init_thread::run()
 {
-	// Initialize the SD card controller:
-	sd::initialize();
-
-	// Initialize the VFS module:
-	vfs::initialize();
-
-	// Mount the root directory:
-	kernel::message() << "Mounting sd0p0 as root..." << kstream::newline;
-	filesystem * root = vfs::get()->mount("/", (partition *) device_mgr::get()->get_device_by_name("sd0p0"));
-	if(root == nullptr)
-	{
-		kernel::message() << "*** Fatal error: Could not mount root filesystem!" << kstream::newline;
-		panic();
-	}
+	// Initialize kernel here.
 
 	kernel::message() << "Kernel initialized!" << kstream::newline << kstream::newline;
 	return 0;

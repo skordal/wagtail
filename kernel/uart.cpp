@@ -17,7 +17,7 @@ void * uart::uart_base[4] = {
 };
 
 // Available UART devices:
-uart uart::uart_modules[4] = {uart(0, "uart0"), uart(1, "uart1"), uart(2, "uart2"), uart(3, "uart3")};
+uart uart::uart_modules[4] = {uart(0), uart(1), uart(2), uart(3)};
 
 // Writes a character to a UART module:
 kostream & uart::operator << (char character)
@@ -41,7 +41,7 @@ unsigned int uart::write(const char * buffer, unsigned int size, unsigned int fl
 }
 
 // Constructs a new UART module with the specified parameters:
-uart::uart(int module, const char * device_name) : character_device(device_name), module(module)
+uart::uart(int module) : module(module)
 {
 	if(module != 2) // None of the other UARTs are in use, so we do nothing with them for now.
 		return;

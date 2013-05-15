@@ -23,7 +23,7 @@ unsigned int scheduler::allocate_pid()
 {
 	unsigned int retval = next_pid++;
 
-	// Check if the PID is unused:
+	// Check if the PID is in use:
 	for(process * proc : process_queue)
 		// If the PID exists, try again:
 		if(retval == proc->get_pid())
@@ -48,24 +48,9 @@ scheduler::scheduler()
 	kernel::message() << "Initializing scheduler..." << kstream::newline;
 	register_block = nullptr;
 
-	// Use timer0 for context switching at regular intervals:
-	timer::get(0).reserve();
-
 	// Install the handler for the exit syscall:
 	syscall_handler::get()->register_handler(std::bind(&scheduler::syscall_exit, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), SYSCALL_EXIT);
-	// Install the handler for the fork syscall:
-	syscall_handler::get()->register_handler(std::bind(&scheduler::syscall_fork, this,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), SYSCALL_FORK);
-	// Install the handler for the wait syscall:
-	syscall_handler::get()->register_handler(std::bind(&scheduler::syscall_wait, this,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), SYSCALL_WAIT);
-}
-
-void scheduler::force_reschedule()
-{
-	// TODO: Cause a scheduler interrupt and reset the timer.
-	while(true) asm volatile("cpsie if\n\twfi\n\t");
 }
 
 void * scheduler::syscall_exit(void * retval, void * unused1, void * unused2)
@@ -82,58 +67,16 @@ void * scheduler::syscall_exit(void * retval, void * unused1, void * unused2)
 	current_process = nullptr;
 	register_block = nullptr;
 
-	force_reschedule();
-}
-
-void * scheduler::syscall_fork(void * unused1, void * unused2, void * unused3)
-{
-#ifdef WAGTAIL_SCHEDULER_DEBUG
-	if(current_process == nullptr)
-	{
-		kernel::message() << "Error: cannot fork process, none is currently active!" << kstream::newline;
-		kernel::panic();
-	}
-#endif
-
-	process * child = current_process->fork();
-	mmu::set_application_table(current_process->get_translation_table(), current_process->get_pid());
-
-	if(child->is_usable())
-	{
-		kernel::message() << "New process: " << (int) child->get_pid() << kstream::newline;
-		process_queue.push_back(child);
-		return (void *) child->get_pid();
-	} else {
-#ifdef WAGTAIL_SCHEDULER_DEBUG
-		kernel::message() << "Error: forking process " << (int) current_process->get_pid() << "failed!"
-			<< kstream::newline;
-#endif
-
-		delete child;
-		return (void *) -1;
-	}
-}
-
-void * scheduler::syscall_wait(void * pid, void * status_loc, void * unused1)
-{
-#ifdef WAGTAIL_SCHEDULER_DEBUG
-	kernel::message() << "Process " << (int) current_process->get_pid()
-		<< ": waiting for process " << (int) pid << kstream::newline;
-#endif
-
-	current_process->set_block(new waitblock((unsigned int) pid, (unsigned int *) status_loc,
-		current_process));
-	process_queue.push_back(current_process);
-
-	current_process = nullptr;
-	register_block = nullptr;
-
-	force_reschedule();
+	// Re-enable interrupts and wait for the next scheduler interrupt:
+	while(true) asm volatile("cpsie if\n\twfi\n\t");
 }
 
 void scheduler::interrupt()
 {
 	process * next_process;
+#ifdef WAGTAIL_SCHEDULER_DEBUG
+	kernel::message() << "Scheduler interrupt!" << kstream::newline;
+#endif
 
 	// Push the currently running process back in the queue. If there are no other
 	// processes in the queue, it will be run again:
@@ -144,7 +87,6 @@ void scheduler::interrupt()
 	if(!process_queue.pop_front(next_process))
 	{
 		timer::get(0).stop();
-		timer::get(0).release();
 		kernel::message() << "No processes left to run, halting kernel." << kstream::newline;
 		kernel::halt();
 	} else {
@@ -152,25 +94,6 @@ void scheduler::interrupt()
 
 		// Switch translation tables:
 		current_process->enable_addrspace();
-
-		if(current_process->is_blocking())
-		{
-			// TODO: Schedule another process if the chosen one is blocking.
-#ifdef WAGTAIL_SCHEDULER_DEBUG
-			kernel::message() << "Process blocking" << kstream::newline;
-#endif
-			process_queue.push_back(current_process);
-			current_process = nullptr;
-			return;
-		} else if(!current_process->is_blocking() && current_process->get_block() != nullptr)
-		{
-#ifdef WAGTAIL_SCHEDULER_DEBUG
-			kernel::message() << "Process block released" << kstream::newline;
-#endif
-			current_process->get_block()->block_return();
-			delete current_process->get_block();
-			current_process->set_block(nullptr);
-		}
 
 		register_block = &current_process->get_registers();
 #ifdef WAGTAIL_SCHEDULER_DEBUG

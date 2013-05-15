@@ -7,7 +7,6 @@
 
 #include <functional>
 
-#include "device.h"
 #include "io.h"
 #include "irq_handler.h"
 #include "mmu.h"
@@ -19,7 +18,7 @@ namespace wagtail
 	/**
 	 * UART device driver.
 	 */
-	class uart final : public character_device, public kostream
+	class uart final : public kostream
 	{
 		public:
 			/**
@@ -44,7 +43,7 @@ namespace wagtail
 			 * @param flags unused parameter.
 			 * @return the number of bytes actually read from the UART.
 			 */
-			unsigned int read(char * buffer, unsigned int size, unsigned int flags = 0) override { return 0; }
+			unsigned int read(char * buffer, unsigned int size, unsigned int flags = 0) { return 0; }
 
 			/**
 			 * Writes data to the UART.
@@ -53,7 +52,7 @@ namespace wagtail
 			 * @param flags unused parameter.
 			 * @return the number of bytes written to the UART.
 			 */
-			unsigned int write(const char * buffer, unsigned int size, unsigned int flags = 0) override;
+			unsigned int write(const char * buffer, unsigned int size, unsigned int flags = 0);
 		private:
 			/** Base of the UART IRQ numbers. */
 			static const int IRQ_BASE = 72;
@@ -67,9 +66,8 @@ namespace wagtail
 			/**
 			 * Constructs a UART driver object for the specified UART module.
 			 * @param module module number
-			 * @param device_name name of the device node.
 			 */
-			uart(int module, const char * device_name);
+			uart(int module);
 
 			// The number of this module:
 			int module;

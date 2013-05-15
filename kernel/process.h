@@ -5,14 +5,11 @@
 #ifndef WAGTAIL_PROCESS_H
 #define WAGTAIL_PROCESS_H
 
-#include "file.h"
 #include "kqueue.h"
 #include "kstream.h"
 #include "mmu.h"
 #include "mm.h"
-#include "process_block.h"
 #include "register_contents.h"
-#include "termination_listener.h"
 #include "utils.h"
 
 namespace wagtail
@@ -20,7 +17,7 @@ namespace wagtail
 	/**
 	 * Class representing a process.
 	 */
-	class process : private termination_listener
+	class process
 	{
 		friend class scheduler;
 
@@ -28,19 +25,8 @@ namespace wagtail
 			/** Default application stack size. */
 			static const unsigned int DEFAULT_STACK_SIZE = 16 * 1024;
 
-			/**
-			 * Constructs a new process from a buffer containing an executable file.
-			 * @param buffer the buffer containing the executable file.
-			 */
-			process(char * buffer);
-
 			/** Process destructor, returns allocated memory to the memory pool. */
 			virtual ~process();
-
-			/**
-			 * Forks this process, returning the child process.
-			 */
-			process * fork();
 
 			/**
 			 * Gets the stored register contents for this process.
@@ -67,75 +53,27 @@ namespace wagtail
 			unsigned int get_pid() const { return pid; }
 
 			/**
-			 * Adds a termination listener to this process.
-			 * @param listener pointer to the listener to add.
-			 */
-			void add_termination_listener(termination_listener * listener);
-
-			/**
-			 * Removes a termination listener from this process.
-			 * @param listener pointer to the listener to remove.
-			 */
-			void remove_termination_listener(termination_listener * listener);
-
-			/**
-			 * Sets a termination listener that listens for child processes.
-			 * @param listener pointer to the listener to set.
-			 */
-			void set_child_termination_listener(termination_listener * listener);
-
-			/**
-			 * Sets the current process block.
-			 * @param block the block to use for blocking.
-			 */
-			void set_block(process_block * block) { this->block = block; }
-
-			/**
-			 * Gets the current process block.
-			 * @return the currently active process block.
-			 */
-			process_block * get_block() const { return block; }
-
-			/**
 			 * Returns `true` if the process has been successfully loaded and initialized.
 			 * @return `true` if the process object can be used, `false` otherwise.
 			 */
 			bool is_usable() const { return usable; }
 
 			/**
-			 * Returns `true` if the process is currently blocking.
-			 * @return `true` if the process is blocking, `false` otherwise.
-			 */
-			bool is_blocking() const { return !(block == nullptr || !block->is_active()); }
-
-			/**
 			 * Gets the process exit code.
 			 * @return the process exit code.
 			 */
 			unsigned int get_exit_code() const { return exit_code; }
-
-			/**
-			 * Gets the number of children of the process.
-			 * @return the number of children of the process.
-			 */
-			unsigned int get_num_children() const { return children.get_length(); }
 		protected:
 			/** Common constructor. */
 			process();
 
 			bool usable = false;
 		private:
-			/** Constructor used when forking a process. */
-			process(process * parent);
-
 			/**
 			 * Allocates memory for the process address space. Used during construction of the process object.
 			 * @warning `code_pages`, `data_pages` and `stack_pages` must be set before calling this method.
 			 */
 			void setup_addrspace();
-
-			/** Listener for child process terminations. */
-			void process_terminated(process * child) override;
 
 			/**
 			 * Sets the process exit code, which is passed to parents when terminating.
@@ -157,13 +95,6 @@ namespace wagtail
 			unsigned int pid;
 			mmu::translation_table<2048> * translation_table;
 			unsigned int exit_code = 0;
-
-			process * parent = nullptr;
-			process_block * block = nullptr;
-
-			kqueue<process *> children;
-			kqueue<termination_listener *> termination_listeners;
-			termination_listener * child_termination_listener = nullptr;
 
 			register_contents registers;
 

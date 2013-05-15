@@ -5,15 +5,11 @@
 #ifndef WAGTAIL_KERNEL_H
 #define WAGTAIL_KERNEL_H
 
-#include "filesystem.h"
 #include "kstream.h"
 #include "kthread.h"
 #include "scheduler.h"
-#include "scm.h"
-#include "sd.h"
 #include "syscall.h"
 #include "uart.h"
-#include "vfs.h"
 
 namespace wagtail
 {
